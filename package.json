@@ -9,20 +9,22 @@
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Other",
+    "AI",
+    "Chat",
     "Machine Learning",
-    "Chat"
+    "Other"
   ],
   "keywords": [
     "ia",
     "ai",
     "chat",
-    "llm",
-    "openai",
-    "anthropic",
-    "ollama",
-    "copilot"
+    "copilot",
+    "openai"
   ],
+  "galleryBanner": {
+    "color": "#0b0f17",
+    "theme": "dark"
+  },
   "main": "./out/extension.js",
   "activationEvents": [],
   "contributes": {
@@ -175,16 +177,23 @@
     }
   },
   "license": "MIT",
+  "pricing": "Free",
+  "homepage": "https://microed.com.br/microedcodeai",
   "repository": {
     "type": "git",
-    "url": "https://microed.com.br/microedcodeai"
+    "url": "https://github.com/profedgarsantos/microedcodeai.git"
   },
+  "bugs": {
+    "url": "https://github.com/profedgarsantos/microedcodeai/issues"
+  },
+  "qna": "marketplace",
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "package": "vsce package --allow-missing-repository --out microedcodeai.vsix",
-    "install-ext": "npm run package && code --install-extension microedcodeai.vsix --force"
+    "package": "vsce package --out marketing/microedcodeai.vsix",
+    "install-ext": "npm run package && code --install-extension marketing/microedcodeai.vsix --force",
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

@@ -566,7 +566,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this.uriExtensao, "media", "style.css")
     );
     const uriLogo = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.uriExtensao, "media", "logo.png")
+      vscode.Uri.joinPath(this.uriExtensao, "media", "logof.png")
     );
     const nonce = gerarNonce();
 

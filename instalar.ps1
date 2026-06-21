@@ -1,6 +1,8 @@
 # Instalador da extensao microedcode.ai para o VS Code.
 # Uso: clique com o botao direito e "Executar com PowerShell",
-# ou no terminal:  ./instalar.ps1
+#      ou no terminal (note o prefixo .\):  .\instalar.ps1
+# Se o PowerShell bloquear a execucao de scripts, rode:
+#      powershell -ExecutionPolicy Bypass -File .\instalar.ps1
 
 $ErrorActionPreference = "Stop"
 Set-Location -Path $PSScriptRoot

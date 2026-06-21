@@ -5,6 +5,7 @@ node_modules/**
 marketing/**
 .gitignore
 tsconfig.json
+instalar.ps1
 **/*.map
 **/*.ts
 **/*.vsix

@@ -73,23 +73,6 @@ Com o **Ollama**, rode modelos 100% localmente — sem precisar de chave de API 
 
 ## 🚀 Instalação
 
-### Opção 1 — Script automático (Windows / PowerShell)
-
-```powershell
-./instalar.ps1
-```
-
-O script instala as dependências, compila, gera o pacote `microedcodeai.vsix` e o instala no VS Code.
-
-### Opção 2 — Manual
-
-```bash
-npm install
-npm run install-ext
-```
-
-### Opção 3 — Instalar um .vsix existente
-
 Pela interface do VS Code: `Extensões` → menu `...` → **Instalar a partir do VSIX...** e selecione `microedcodeai.vsix`.
 
 Ou pelo terminal:
@@ -97,8 +80,6 @@ Ou pelo terminal:
 ```bash
 code --install-extension microedcodeai.vsix --force
 ```
-
-> Um instalador pronto e uma página de apresentação estão disponíveis na pasta [`marketing/`](marketing/).
 
 ## ▶️ Como usar
 
