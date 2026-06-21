@@ -1,9 +1,9 @@
 {
-  "name": "microedcodeai",
-  "displayName": "microedcode.ai",
+  "name": "microedcode-ai",
+  "displayName": "Microed CodeAI",
   "description": "Chat com IA integrado ao VS Code, com suporte a LLMs customizados (OpenAI, Anthropic, Ollama e compatíveis).",
-  "version": "0.1.0",
-  "publisher": "microed",
+  "version": "4.0.0",
+  "publisher": "microedsistemas",
   "icon": "logof.png",
   "engines": {
     "vscode": "^1.85.0"
@@ -193,7 +193,11 @@
     "watch": "tsc -watch -p ./",
     "package": "vsce package --out marketing/microedcodeai.vsix",
     "install-ext": "npm run package && code --install-extension marketing/microedcodeai.vsix --force",
-    "publish": "vsce publish"
+    "publish": "vsce publish",
+    "release": "npm run package && vsce publish",
+    "release:patch": "npm version patch --no-git-tag-version && npm run package && vsce publish",
+    "release:minor": "npm version minor --no-git-tag-version && npm run package && vsce publish",
+    "release:major": "npm version major --no-git-tag-version && npm run package && vsce publish"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

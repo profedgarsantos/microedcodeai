@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="logof.png" alt="microedcode.ai" width="96" />
+<img src="logof.png" alt="Microed CodeAI" width="96" />
 
-# microedcode.ai
+# Microed CodeAI
 
 **A inteligência artificial que programa com você, dentro do seu editor.**
 
@@ -14,7 +14,7 @@ Chat com IA integrado ao Visual Studio Code, com painel lateral e **Modo Agente*
 
 ---
 
-O **microedcode.ai** traz um copiloto de IA direto para o painel lateral do VS Code. Converse, peça análises e deixe o **Modo Agente** ler, entender e escrever código por você — escolhendo o provedor e o modelo que preferir, sem sair do editor.
+O **Microed CodeAI** traz um copiloto de IA direto para o painel lateral do VS Code. Converse, peça análises e deixe o **Modo Agente** ler, entender e escrever código por você — escolhendo o provedor e o modelo que preferir, sem sair do editor.
 
 ## Sumário
 
@@ -42,7 +42,7 @@ O **microedcode.ai** traz um copiloto de IA direto para o painel lateral do VS C
 
 ## 🤖 Modo Agente
 
-Com o **Modo Agente** ativado (interruptor na barra inferior do painel), o microedcode.ai trabalha em passos: investiga a base de código, junta o contexto necessário e raciocina até propor a melhor solução — como um par de programação que nunca dorme.
+Com o **Modo Agente** ativado (interruptor na barra inferior do painel), o Microed CodeAI trabalha em passos: investiga a base de código, junta o contexto necessário e raciocina até propor a melhor solução — como um par de programação que nunca dorme.
 
 - **Analisa a lógica do projeto** — lista e lê arquivos, busca trechos no código
 - **Diagnostica bugs** — consulta erros e avisos do editor
@@ -83,7 +83,7 @@ code --install-extension microedcodeai.vsix --force
 
 ## ▶️ Como usar
 
-1. Clique no ícone do **microedcode.ai** na barra lateral de atividades.
+1. Clique no ícone do **Microed CodeAI** na barra lateral de atividades.
 2. Clique na engrenagem para configurar o provedor, o modelo e a chave de API.
 3. Comece a conversar.
 
@@ -91,7 +91,7 @@ Para o Ollama, basta ter o servidor local em execução (`http://localhost:11434
 
 ## ⚙️ Configurações
 
-Disponíveis em `Configurações → Extensões → microedcode.ai` (ou direto no painel da extensão):
+Disponíveis em `Configurações → Extensões → Microed CodeAI` (ou direto no painel da extensão):
 
 | Configuração | Padrão | Descrição |
 |---|---|---|
@@ -105,11 +105,11 @@ Disponíveis em `Configurações → Extensões → microedcode.ai` (ou direto n
 
 ## 🧪 Geração de testes unitários
 
-Clique com o botão direito em um arquivo (ou em um trecho selecionado) e escolha **"Criar ou atualizar teste unitário"**. O microedcode.ai detecta o framework de testes do projeto, cria ou atualiza o arquivo de teste seguindo a convenção do projeto e cobre casos de sucesso, de borda e de erro.
+Clique com o botão direito em um arquivo (ou em um trecho selecionado) e escolha **"Criar ou atualizar teste unitário"**. O Microed CodeAI detecta o framework de testes do projeto, cria ou atualiza o arquivo de teste seguindo a convenção do projeto e cobre casos de sucesso, de borda e de erro.
 
 ## ❓ Perguntas frequentes
 
-**O microedcode.ai é gratuito?**
+**O Microed CodeAI é gratuito?**
 Sim. A extensão é gratuita. Você só precisa de uma chave de API do provedor de IA que escolher (ou usar o Ollama, que roda localmente sem chave).
 
 **Minhas chaves de API ficam seguras?**

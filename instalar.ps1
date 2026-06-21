@@ -35,18 +35,19 @@ if (-not (Test-Path "node_modules")) {
 Write-Host "==> Compilando (npm run compile)..." -ForegroundColor Cyan
 npm run compile
 
-# 5) Gera o pacote .vsix
-Write-Host "==> Gerando pacote microedcodeai.vsix..." -ForegroundColor Cyan
+# 5) Gera o pacote .vsix (dentro da pasta marketing/)
+Write-Host "==> Gerando pacote marketing/microedcodeai.vsix..." -ForegroundColor Cyan
 npm run package
 
-if (-not (Test-Path "microedcodeai.vsix")) {
-    Write-Host "ERRO: o pacote microedcodeai.vsix nao foi gerado." -ForegroundColor Red
+$vsix = Join-Path $PSScriptRoot "marketing\microedcodeai.vsix"
+if (-not (Test-Path $vsix)) {
+    Write-Host "ERRO: o pacote marketing/microedcodeai.vsix nao foi gerado." -ForegroundColor Red
     exit 1
 }
 
 # 6) Instala a extensao no VS Code
 Write-Host "==> Instalando a extensao no VS Code..." -ForegroundColor Cyan
-code --install-extension microedcodeai.vsix --force
+code --install-extension $vsix --force
 
 Write-Host ""
 Write-Host "Concluido! Reinicie o VS Code e abra o microedcode.ai na barra lateral." -ForegroundColor Green
