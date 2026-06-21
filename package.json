@@ -1,0 +1,195 @@
+{
+  "name": "microedcodeai",
+  "displayName": "microedcode.ai",
+  "description": "Chat com IA integrado ao VS Code, com suporte a LLMs customizados (OpenAI, Anthropic, Ollama e compatíveis).",
+  "version": "0.1.0",
+  "publisher": "microed",
+  "icon": "logo.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning",
+    "Chat"
+  ],
+  "keywords": [
+    "ia",
+    "ai",
+    "chat",
+    "llm",
+    "openai",
+    "anthropic",
+    "ollama",
+    "copilot"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "microedcodeai",
+          "title": "microedcode.ai",
+          "icon": "media/logo.png"
+        }
+      ]
+    },
+    "views": {
+      "microedcodeai": [
+        {
+          "id": "microedcodeai.chatView",
+          "name": "Chat",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "microedcodeai.newChat",
+        "title": "microedcode.ai: Nova conversa",
+        "icon": "$(add)"
+      },
+      {
+        "command": "microedcodeai.openSettings",
+        "title": "microedcode.ai: Configurar provedor de IA",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "microedcodeai.clearKeys",
+        "title": "microedcode.ai: Limpar chaves de API salvas"
+      },
+      {
+        "command": "microedcodeai.about",
+        "title": "microedcode.ai: Sobre",
+        "icon": "$(info)"
+      },
+      {
+        "command": "microedcodeai.gerarTesteUnitario",
+        "title": "Criar ou atualizar teste unitário"
+      },
+      {
+        "command": "microedcodeai.historico",
+        "title": "microedcode.ai: Histórico de conversas",
+        "icon": "$(history)"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "microedcodeai.contexto",
+        "label": "microedcode.ai"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "microedcodeai.newChat",
+          "when": "view == microedcodeai.chatView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "microedcodeai.openSettings",
+          "when": "view == microedcodeai.chatView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "microedcodeai.historico",
+          "when": "view == microedcodeai.chatView",
+          "group": "navigation@3"
+        },
+        {
+          "command": "microedcodeai.about",
+          "when": "view == microedcodeai.chatView",
+          "group": "navigation@4"
+        }
+      ],
+      "editor/context": [
+        {
+          "submenu": "microedcodeai.contexto",
+          "group": "navigation@9"
+        }
+      ],
+      "microedcodeai.contexto": [
+        {
+          "command": "microedcodeai.gerarTesteUnitario",
+          "group": "1_microedcodeai@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "microedcode.ai",
+      "properties": {
+        "microedcodeai.providerType": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "deepseek",
+            "ollama",
+            "openai-compativel"
+          ],
+          "enumDescriptions": [
+            "OpenAI (api.openai.com)",
+            "Anthropic (api.anthropic.com)",
+            "DeepSeek (api.deepseek.com)",
+            "Ollama (servidor local)",
+            "Qualquer API compatível com OpenAI (LM Studio, Groq, OpenRouter, etc.)"
+          ],
+          "default": "openai",
+          "description": "Provedor de IA usado por padrão."
+        },
+        "microedcodeai.model": {
+          "type": "string",
+          "default": "gpt-5.4-mini",
+          "description": "Nome do modelo a ser utilizado (ex.: gpt-5.4-mini, claude-sonnet-4-6, deepseek-v4-flash, llama3.3)."
+        },
+        "microedcodeai.baseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "URL base da API. Deixe em branco para usar o padrão do provedor selecionado."
+        },
+        "microedcodeai.systemPrompt": {
+          "type": "string",
+          "editPresentation": "multilineText",
+          "default": "Você é um assistente de programação prestativo. Responda sempre em português do Brasil.",
+          "description": "Instrução de sistema enviada ao modelo no início de cada conversa."
+        },
+        "microedcodeai.temperature": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Temperatura de amostragem (criatividade) do modelo."
+        },
+        "microedcodeai.modoAgente": {
+          "type": "boolean",
+          "default": true,
+          "description": "Modo Agente: permite que a IA leia arquivos do projeto, analise a lógica e proponha a criação/atualização de código (com aprovação antes de aplicar)."
+        },
+        "microedcodeai.aplicarAutomaticamente": {
+          "type": "boolean",
+          "default": true,
+          "description": "Aplicar alterações automaticamente: quando ativado (padrão), a IA altera os arquivos imediatamente no VS Code. Desative para revisar e aprovar cada mudança antes de aplicar."
+        }
+      }
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://microed.com.br/microedcodeai"
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package --allow-missing-repository --out microedcodeai.vsix",
+    "install-ext": "npm run package && code --install-extension microedcodeai.vsix --force"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.24.0",
+    "typescript": "^5.4.0"
+  }
+}

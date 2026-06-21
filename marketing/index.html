@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>microedcode.ai — IA de programação direto no seu VS Code</title>
+  <meta name="description" content="microedcode.ai: chat com inteligência artificial integrado ao VS Code, com Modo Agente que lê, analisa e escreve código por você. Suporte a OpenAI, Anthropic, DeepSeek, Ollama e qualquer API compatível. 100% em português do Brasil." />
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --bg-soft: #111827;
+      --card: #151c2c;
+      --border: #233047;
+      --fg: #e7edf7;
+      --muted: #94a3b8;
+      --accent: #5b8cff;
+      --accent-2: #7c5cff;
+      --accent-glow: rgba(91, 140, 255, 0.35);
+      --ok: #34d399;
+      --radius: 16px;
+      --max: 1080px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--fg);
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(124, 92, 255, 0.18), transparent 60%),
+                  radial-gradient(1000px 500px at -10% 10%, rgba(91, 140, 255, 0.16), transparent 55%),
+                  var(--bg);
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 22px; }
+
+    /* Top bar */
+    header.nav {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(10px);
+      background: rgba(11, 15, 23, 0.7);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .brand img { width: 30px; height: 30px; border-radius: 7px; }
+    .brand .dot { color: var(--accent); }
+    .nav-links { display: flex; gap: 22px; font-size: 0.92rem; color: var(--muted); }
+    .nav-links a:hover { color: var(--fg); }
+    @media (max-width: 720px) { .nav-links { display: none; } }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 22px; border-radius: 12px; font-weight: 600; font-size: 0.98rem;
+      border: 1px solid transparent; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease, background .2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff; box-shadow: 0 10px 30px var(--accent-glow);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px var(--accent-glow); }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--fg); }
+    .btn-ghost:hover { border-color: var(--accent); color: #fff; }
+    .btn-sm { padding: 9px 16px; font-size: 0.88rem; }
+
+    /* Hero */
+    .hero { padding: 80px 0 60px; text-align: center; }
+    .hero .logo-big {
+      width: 96px; height: 96px; border-radius: 22px; margin-bottom: 24px;
+      box-shadow: 0 20px 60px rgba(124, 92, 255, 0.35);
+    }
+    .badge {
+      display: inline-block; padding: 6px 14px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--bg-soft);
+      font-size: 0.8rem; color: var(--muted); margin-bottom: 22px;
+    }
+    .hero h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.1; margin: 0 0 18px; letter-spacing: -0.02em; }
+    .hero h1 .grad {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .hero p.lead { font-size: clamp(1.05rem, 2.2vw, 1.3rem); color: var(--muted); max-width: 720px; margin: 0 auto 34px; }
+    .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .hero-note { margin-top: 16px; font-size: 0.85rem; color: var(--muted); }
+
+    /* Sections */
+    section { padding: 64px 0; }
+    .section-head { text-align: center; max-width: 720px; margin: 0 auto 44px; }
+    .section-head h2 { font-size: clamp(1.7rem, 3.5vw, 2.4rem); margin: 0 0 12px; letter-spacing: -0.01em; }
+    .section-head p { color: var(--muted); margin: 0; font-size: 1.05rem; }
+    .eyebrow { color: var(--accent); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* Cards grid */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .card {
+      background: linear-gradient(180deg, var(--card), var(--bg-soft));
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 26px;
+      transition: transform .18s ease, border-color .18s ease;
+    }
+    .card:hover { transform: translateY(-4px); border-color: var(--accent); }
+    .card .ico {
+      width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center;
+      background: rgba(91, 140, 255, 0.12); color: var(--accent); font-size: 1.4rem; margin-bottom: 16px;
+    }
+    .card h3 { margin: 0 0 8px; font-size: 1.18rem; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.97rem; }
+
+    /* Agent feature split */
+    .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: center; }
+    @media (max-width: 860px) { .split { grid-template-columns: 1fr; gap: 28px; } }
+    .feature-list { list-style: none; padding: 0; margin: 24px 0 0; }
+    .feature-list li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+    .feature-list li:last-child { border-bottom: 0; }
+    .feature-list .chk { color: var(--ok); font-weight: 800; }
+    .panel {
+      background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    }
+    .panel .panel-top { display: flex; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+    .panel .panel-top span { width: 11px; height: 11px; border-radius: 50%; background: #3b4865; }
+    .panel .panel-body { padding: 18px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.86rem; }
+    .chat-row { margin-bottom: 14px; }
+    .chat-row .who { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 4px; }
+    .bubble-user { background: rgba(124, 92, 255, 0.15); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; }
+    .bubble-ai { background: rgba(91, 140, 255, 0.1); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; }
+    .tag-action { display: inline-block; color: var(--accent); font-style: italic; font-size: 0.8rem; }
+    .prop {
+      border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 8px;
+      padding: 10px 12px; margin-top: 6px; background: var(--card);
+    }
+    .prop b { color: var(--fg); }
+    .prop .acts { display: flex; gap: 6px; margin-top: 8px; }
+    .mini-btn { font-size: 0.74rem; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); color: var(--muted); }
+    .mini-btn.go { background: var(--accent); color: #fff; border-color: transparent; }
+
+    /* Providers */
+    .providers { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .chip {
+      display: flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 999px;
+      background: var(--bg-soft); border: 1px solid var(--border); font-weight: 600;
+    }
+    .chip:hover { border-color: var(--accent); }
+
+    /* Steps */
+    .steps { counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .step { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px 24px; }
+    .step::before {
+      counter-increment: step; content: counter(step);
+      position: absolute; top: -16px; left: 24px; width: 36px; height: 36px; border-radius: 10px;
+      display: grid; place-items: center; font-weight: 800; color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 8px 22px var(--accent-glow);
+    }
+    .step h4 { margin: 8px 0 8px; font-size: 1.08rem; }
+    .step p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    .step code { background: #0a0e16; border: 1px solid var(--border); border-radius: 6px; padding: 2px 6px; font-size: 0.85rem; }
+
+    /* Download CTA */
+    .cta {
+      text-align: center; background: linear-gradient(135deg, rgba(91,140,255,0.14), rgba(124,92,255,0.14));
+      border: 1px solid var(--border); border-radius: 24px; padding: 56px 28px;
+    }
+    .cta h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0 0 12px; }
+    .cta p { color: var(--muted); max-width: 620px; margin: 0 auto 28px; }
+    .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .filemeta { margin-top: 18px; font-size: 0.82rem; color: var(--muted); }
+
+    /* FAQ */
+    .faq details {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 6px 20px; margin-bottom: 12px;
+    }
+    .faq summary { cursor: pointer; font-weight: 600; padding: 14px 0; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; color: var(--accent); font-size: 1.4rem; }
+    .faq details[open] summary::after { content: "\2212"; }
+    .faq p { color: var(--muted); margin: 0 0 16px; }
+
+    footer {
+      border-top: 1px solid var(--border); padding: 40px 0; margin-top: 40px; text-align: center; color: var(--muted); font-size: 0.9rem;
+    }
+    footer .brand { justify-content: center; margin-bottom: 12px; color: var(--fg); }
+    footer a.site { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#topo">
+        <img src="logo.png" alt="microedcode.ai" />
+        <span>microedcode<span class="dot">.ai</span></span>
+      </a>
+      <nav class="nav-links">
+        <a href="#recursos">Recursos</a>
+        <a href="#agente">Modo Agente</a>
+        <a href="#provedores">Provedores</a>
+        <a href="#instalar">Instalação</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a class="btn btn-primary btn-sm" href="microedcodeai.vsix" download>Baixar agora</a>
+    </div>
+  </header>
+
+  <a id="topo"></a>
+  <section class="hero">
+    <div class="wrap">
+      <img class="logo-big" src="logo.png" alt="microedcode.ai" />
+      <div class="badge">Extensão para Visual Studio Code · por Microed Sistemas</div>
+      <h1>A inteligência artificial que <span class="grad">programa com você</span>, dentro do seu editor</h1>
+      <p class="lead">
+        O <strong>microedcode.ai</strong> traz um copiloto de IA direto para o painel lateral do VS Code.
+        Converse, peça análises e deixe o <strong>Modo Agente</strong> ler, entender e escrever código por você —
+        tudo em <strong>português do Brasil</strong> e com a IA que você escolher.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="microedcodeai.vsix" download>⬇ Baixar instalador (.vsix)</a>
+        <a class="btn btn-ghost" href="#instalar">Como instalar</a>
+      </div>
+      <p class="hero-note">Grátis · leve (223 KB) · suas chaves de API ficam seguras no seu computador</p>
+    </div>
+  </section>
+
+  <section id="recursos">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Por que microedcode.ai</div>
+        <h2>Tudo que você precisa para codar mais rápido</h2>
+        <p>Um assistente de IA completo, integrado ao seu fluxo de trabalho, sem sair do VS Code.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="ico">💬</div>
+          <h3>Chat no painel lateral</h3>
+          <p>Converse com a IA enquanto programa, com respostas em tempo real (streaming), markdown e botão para copiar blocos de código.</p>
+        </div>
+        <div class="card">
+          <div class="ico">🤖</div>
+          <h3>Modo Agente</h3>
+          <p>A IA lê arquivos, busca no código, consulta erros do editor e propõe a criação ou atualização de arquivos inteiros.</p>
+        </div>
+        <div class="card">
+          <div class="ico">✅</div>
+          <h3>Você no controle</h3>
+          <p>Cada alteração pode virar uma proposta: revise com “Ver diff” e confirme com “Aplicar”. Nada muda sem a sua aprovação.</p>
+        </div>
+        <div class="card">
+          <div class="ico">🧪</div>
+          <h3>Testes em um clique</h3>
+          <p>Selecione um trecho ou arquivo e gere (ou atualize) testes unitários cobrindo casos de sucesso, de borda e de erro.</p>
+        </div>
+        <div class="card">
+          <div class="ico">🔌</div>
+          <h3>Sua IA, sua escolha</h3>
+          <p>OpenAI, Anthropic/Claude, DeepSeek, Ollama (local) ou qualquer API compatível com OpenAI. Troque de modelo quando quiser.</p>
+        </div>
+        <div class="card">
+          <div class="ico">🔒</div>
+          <h3>Privacidade em primeiro lugar</h3>
+          <p>As chaves de API ficam guardadas com segurança no SecretStorage do VS Code, no seu próprio computador.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="agente" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="wrap split">
+      <div>
+        <div class="eyebrow">Modo Agente</div>
+        <h2 style="font-size: clamp(1.7rem, 3.5vw, 2.4rem); margin: 10px 0 14px;">Um agente que entende o seu projeto</h2>
+        <p style="color: var(--muted); margin: 0;">
+          Com o Modo Agente ativado, o microedcode.ai trabalha em passos: investiga a base de código,
+          junta o contexto necessário e raciocina até propor a melhor solução — como um par de programação que nunca dorme.
+        </p>
+        <ul class="feature-list">
+          <li><span class="chk">✓</span> <span><b>Analisa a lógica</b> — lista e lê arquivos, busca trechos no código.</span></li>
+          <li><span class="chk">✓</span> <span><b>Diagnostica bugs</b> — consulta erros e avisos do editor.</span></li>
+          <li><span class="chk">✓</span> <span><b>Cria e atualiza código</b> — propõe o conteúdo completo de arquivos.</span></li>
+          <li><span class="chk">✓</span> <span><b>Usa o contexto do editor</b> — considera o arquivo ativo e a seleção.</span></li>
+        </ul>
+      </div>
+      <div class="panel" aria-hidden="true">
+        <div class="panel-top"><span></span><span></span><span></span></div>
+        <div class="panel-body">
+          <div class="chat-row">
+            <div class="who">Você</div>
+            <div class="bubble-user">Corrija o bug de validação no formulário de login.</div>
+          </div>
+          <div class="chat-row">
+            <div class="who">microedcode.ai</div>
+            <div class="bubble-ai">
+              <div class="tag-action">Lendo src/login.ts…</div><br />
+              <div class="tag-action">Analisando diagnósticos…</div>
+              <div class="prop">
+                <b>src/login.ts</b><br />
+                Adicionada checagem de e-mail vazio antes do submit.
+                <div class="acts">
+                  <span class="mini-btn go">Aplicar</span>
+                  <span class="mini-btn">Ver diff</span>
+                  <span class="mini-btn">Rejeitar</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="provedores">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Compatibilidade</div>
+        <h2>Funciona com a IA que você já usa</h2>
+        <p>Escolha o provedor e o modelo no painel de configuração, ou digite o nome do modelo manualmente.</p>
+      </div>
+      <div class="providers">
+        <div class="chip">🟢 OpenAI</div>
+        <div class="chip">🟣 Anthropic / Claude</div>
+        <div class="chip">🔵 DeepSeek</div>
+        <div class="chip">🦙 Ollama (local)</div>
+        <div class="chip">⚙️ Compatível com OpenAI</div>
+      </div>
+      <p style="text-align:center; color: var(--muted); margin-top: 20px; font-size: 0.92rem;">
+        LM Studio, Groq, OpenRouter e outros serviços compatíveis com o formato da OpenAI também funcionam.
+        Com o Ollama, rode modelos 100% localmente — sem precisar de chave de API.
+      </p>
+    </div>
+  </section>
+
+  <section id="instalar" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Instalação</div>
+        <h2>Pronto para usar em 3 passos</h2>
+        <p>Baixe o instalador desta página e siga o passo a passo. Leva menos de um minuto.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <h4>Baixe o instalador</h4>
+          <p>Clique em <b>Baixar instalador (.vsix)</b> para salvar o arquivo <code>microedcodeai.vsix</code> no seu computador.</p>
+        </div>
+        <div class="step">
+          <h4>Instale no VS Code</h4>
+          <p>No VS Code: <code>Extensões</code> → menu <code>...</code> → <b>Instalar a partir do VSIX...</b> e selecione o arquivo baixado.</p>
+        </div>
+        <div class="step">
+          <h4>Comece a usar</h4>
+          <p>Clique no ícone do <b>microedcode.ai</b> na barra lateral, configure o provedor e a chave de API e converse.</p>
+        </div>
+      </div>
+      <div style="margin-top: 28px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px;">
+        <b>Prefere a linha de comando (Windows)?</b>
+        <p style="color: var(--muted); margin: 8px 0 0;">
+          Baixe também o <a href="instalar.ps1" download style="color: var(--accent);">instalar.ps1</a>, coloque-o na mesma pasta do
+          <code style="background:#0a0e16;border:1px solid var(--border);border-radius:6px;padding:2px 6px;">microedcodeai.vsix</code>,
+          clique com o botão direito e escolha <b>“Executar com PowerShell”</b>. Ou pelo terminal:
+          <code style="display:block;margin-top:8px;background:#0a0e16;border:1px solid var(--border);border-radius:6px;padding:10px 12px;">code --install-extension microedcodeai.vsix --force</code>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="cta">
+        <h2>Acelere seu código hoje mesmo</h2>
+        <p>Leve, gratuito e em português. Instale o microedcode.ai e tenha um copiloto de IA dentro do seu editor.</p>
+        <div class="cta-actions">
+          <a class="btn btn-primary" href="microedcodeai.vsix" download>⬇ Baixar instalador (.vsix)</a>
+          <a class="btn btn-ghost" href="instalar.ps1" download>Baixar script de instalação</a>
+        </div>
+        <div class="filemeta">microedcodeai.vsix · ~223 KB · compatível com VS Code 1.85 ou superior</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq">
+    <div class="wrap" style="max-width: 820px;">
+      <div class="section-head">
+        <div class="eyebrow">Dúvidas</div>
+        <h2>Perguntas frequentes</h2>
+      </div>
+      <details open>
+        <summary>O microedcode.ai é gratuito?</summary>
+        <p>Sim. A extensão é gratuita. Você só precisa de uma chave de API do provedor de IA que escolher (ou usar o Ollama, que roda localmente sem chave).</p>
+      </details>
+      <details>
+        <summary>Minhas chaves de API ficam seguras?</summary>
+        <p>Sim. As chaves são guardadas no SecretStorage do VS Code, armazenado de forma segura no seu próprio computador — nunca em arquivos do projeto.</p>
+      </details>
+      <details>
+        <summary>A IA altera meus arquivos sem permissão?</summary>
+        <p>Você decide. No modo de aprovação manual, cada mudança vira uma proposta com os botões “Aplicar”, “Ver diff” e “Rejeitar”. Nada é alterado sem a sua confirmação.</p>
+      </details>
+      <details>
+        <summary>Quais modelos de IA são suportados?</summary>
+        <p>OpenAI, Anthropic/Claude, DeepSeek, Ollama (local) e qualquer API compatível com OpenAI, como LM Studio, Groq e OpenRouter.</p>
+      </details>
+      <details>
+        <summary>Preciso de internet?</summary>
+        <p>Para provedores em nuvem, sim. Com o Ollama você roda modelos localmente e pode trabalhar de forma totalmente offline.</p>
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="brand">
+        <img src="logo.png" alt="microedcode.ai" style="width:26px;height:26px;border-radius:6px;" />
+        <span>microedcode<span style="color: var(--accent);">.ai</span></span>
+      </div>
+      <p>Extensão criada por <strong>Microed Sistemas</strong>.</p>
+      <p><a class="site" href="https://microed.com.br/microedcodeai" target="_blank" rel="noopener">microed.com.br/microedcodeai</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>

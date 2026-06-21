@@ -1,0 +1,427 @@
+:root {
+  --espaco: 10px;
+  --raio: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size, 13px);
+  color: var(--vscode-foreground);
+  background: var(--vscode-sideBar-background, var(--vscode-editor-background));
+}
+
+.oculto {
+  display: none !important;
+}
+
+/* ----------------------- Painel de chat ----------------------- */
+
+.painel-chat {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ----------------------- Propaganda (topo) ----------------------- */
+
+.propaganda {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  text-decoration: none;
+  color: var(--vscode-foreground);
+  background: var(--vscode-editorWidget-background, rgba(127, 127, 127, 0.08));
+  border-bottom: 1px solid var(--vscode-widget-border, transparent);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.propaganda:hover {
+  background: var(--vscode-list-hoverBackground, rgba(127, 127, 127, 0.16));
+}
+
+.propaganda-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.propaganda-texto {
+  flex: 1 1 auto;
+  font-size: 0.82em;
+  line-height: 1.3;
+  color: var(--vscode-descriptionForeground);
+}
+
+.propaganda-texto strong {
+  color: var(--vscode-foreground);
+}
+
+.propaganda-cta {
+  flex: 0 0 auto;
+  font-size: 0.8em;
+  white-space: nowrap;
+  color: var(--vscode-textLink-foreground);
+}
+
+.mensagens {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--espaco);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco);
+}
+
+.boas-vindas {
+  color: var(--vscode-descriptionForeground);
+  padding: 16px 8px;
+  text-align: center;
+}
+
+.boas-vindas h3 {
+  margin: 0 0 8px;
+}
+
+.boas-vindas p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.bolha {
+  border-radius: var(--raio);
+  padding: 8px 10px;
+  line-height: 1.5;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.bolha.usuario {
+  align-self: flex-end;
+  max-width: 90%;
+  background: var(--vscode-inputOption-activeBackground, rgba(120, 120, 255, 0.18));
+  border: 1px solid var(--vscode-input-border, transparent);
+}
+
+.bolha.assistente {
+  align-self: flex-start;
+  width: 100%;
+  background: var(--vscode-editorWidget-background, rgba(127, 127, 127, 0.08));
+  border: 1px solid var(--vscode-editorWidget-border, transparent);
+}
+
+.bolha.erro {
+  align-self: stretch;
+  background: var(--vscode-inputValidation-errorBackground, rgba(255, 80, 80, 0.12));
+  border: 1px solid var(--vscode-inputValidation-errorBorder, #b91c1c);
+  color: var(--vscode-foreground);
+}
+
+.bolha .papel {
+  font-size: 0.78em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.bolha pre {
+  background: var(--vscode-textCodeBlock-background, rgba(0, 0, 0, 0.25));
+  border: 1px solid var(--vscode-widget-border, transparent);
+  border-radius: 6px;
+  padding: 8px;
+  overflow-x: auto;
+  position: relative;
+  margin: 6px 0;
+}
+
+.bolha pre code {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 0.92em;
+  white-space: pre;
+}
+
+.bolha code {
+  font-family: var(--vscode-editor-font-family, monospace);
+  background: var(--vscode-textCodeBlock-background, rgba(127, 127, 127, 0.2));
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+.btn-copiar {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.75em;
+  padding: 2px 6px;
+  cursor: pointer;
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  border: none;
+  border-radius: 4px;
+  opacity: 0.85;
+}
+
+.btn-copiar:hover {
+  opacity: 1;
+}
+
+.cursor-digitando::after {
+  content: "▋";
+  animation: piscar 1s steps(2) infinite;
+  opacity: 0.7;
+}
+
+@keyframes piscar {
+  0% { opacity: 0; }
+  50% { opacity: 0.8; }
+}
+
+/* ----------------------- Barra de status ----------------------- */
+
+.barra-status {
+  padding: 2px var(--espaco);
+  font-size: 0.78em;
+  color: var(--vscode-descriptionForeground);
+  border-top: 1px solid var(--vscode-widget-border, transparent);
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.toggle-agente {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.toggle-agente input {
+  cursor: pointer;
+}
+
+/* ----------------------- Área de entrada ----------------------- */
+
+.area-entrada {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  padding: var(--espaco);
+  border-top: 1px solid var(--vscode-widget-border, transparent);
+}
+
+#entrada {
+  flex: 1 1 auto;
+  resize: none;
+  max-height: 180px;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, var(--vscode-contrastBorder, #555));
+  border-radius: 6px;
+  padding: 6px 8px;
+  line-height: 1.4;
+}
+
+#entrada:focus {
+  outline: 1px solid var(--vscode-focusBorder);
+}
+
+button.primario {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+button.primario:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+button.secundario {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+button.secundario:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+/* ----------------------- Painel de configuração ----------------------- */
+
+.painel-config {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow-y: auto;
+  padding: var(--espaco);
+  background: var(--vscode-sideBar-background, var(--vscode-editor-background));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.painel-config h2 {
+  margin: 0 0 8px;
+  font-size: 1.05em;
+}
+
+.painel-config label {
+  margin-top: 6px;
+  font-size: 0.85em;
+  color: var(--vscode-descriptionForeground);
+}
+
+.painel-config .dica {
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+.painel-config input,
+.painel-config select,
+.painel-config textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, var(--vscode-contrastBorder, #555));
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.painel-config input[type="range"] {
+  padding: 0;
+}
+
+.painel-config select {
+  background: var(--vscode-dropdown-background);
+  color: var(--vscode-dropdown-foreground);
+}
+
+.painel-config textarea {
+  resize: vertical;
+}
+
+.acoes-config {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.check-config {
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  cursor: pointer;
+  color: var(--vscode-foreground);
+}
+
+.check-config input {
+  width: auto;
+  cursor: pointer;
+}
+
+.sobre {
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px solid var(--vscode-widget-border, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.82em;
+  color: var(--vscode-descriptionForeground);
+}
+
+.link-chave {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 0.82em;
+  color: var(--vscode-textLink-foreground);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.link-chave:hover {
+  color: var(--vscode-textLink-activeForeground);
+  text-decoration: underline;
+}
+
+/* ----------------------- Ações e propostas do agente ----------------------- */
+
+.acao-agente {
+  align-self: flex-start;
+  font-size: 0.82em;
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+  padding: 2px 4px;
+}
+
+.proposta {
+  border: 1px solid var(--vscode-editorWidget-border, var(--vscode-widget-border, #555));
+  border-left: 3px solid var(--vscode-textLink-foreground);
+  border-radius: var(--raio);
+  padding: 8px 10px;
+  background: var(--vscode-editorWidget-background, rgba(127, 127, 127, 0.08));
+}
+
+.proposta-titulo {
+  font-weight: 600;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 0.9em;
+  word-break: break-all;
+}
+
+.proposta-desc {
+  margin-top: 4px;
+  font-size: 0.88em;
+  color: var(--vscode-descriptionForeground);
+  line-height: 1.4;
+}
+
+.proposta-acoes {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.proposta-acoes button {
+  font-size: 0.85em;
+  padding: 4px 10px;
+}
+
+.proposta-status {
+  margin-top: 6px;
+  font-size: 0.82em;
+  color: var(--vscode-descriptionForeground);
+}
+
+.proposta-aplicada {
+  border-left-color: var(--vscode-testing-iconPassed, #4caf50);
+}
+
