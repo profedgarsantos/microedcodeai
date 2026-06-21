@@ -4,7 +4,7 @@
   "description": "Chat com IA integrado ao VS Code, com suporte a LLMs customizados (OpenAI, Anthropic, Ollama e compatíveis).",
   "version": "0.1.0",
   "publisher": "microed",
-  "icon": "logo.png",
+  "icon": "logof.png",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -31,7 +31,7 @@
         {
           "id": "microedcodeai",
           "title": "microedcode.ai",
-          "icon": "media/logo.png"
+          "icon": "media/logof.png"
         }
       ]
     },
