@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logof.png" alt="Microed CodeAI" width="96" />
+<img src="https://raw.githubusercontent.com/profedgarsantos/microedcodeai/main/logof.png" alt="Microed CodeAI" width="96" />
 
 # Microed CodeAI
 
