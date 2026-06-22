@@ -2,7 +2,7 @@
   "name": "microedcode-ai",
   "displayName": "Microed CodeAI",
   "description": "Chat com IA integrado ao VS Code, com suporte a LLMs customizados (OpenAI, Anthropic, Ollama e compatíveis).",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "publisher": "microedsistemas",
   "icon": "logof.png",
   "engines": {
@@ -181,10 +181,10 @@
   "homepage": "https://microed.com.br/microedcodeai",
   "repository": {
     "type": "git",
-    "url": "https://github.com/profedgarsantos/microedcodeai.git"
+    "url": "https://microed.com.br/microedcodeai"
   },
   "bugs": {
-    "url": "https://github.com/profedgarsantos/microedcodeai/issues"
+    "url": "https://microed.com.br/microedcodeai"
   },
   "qna": "marketplace",
   "scripts": {
