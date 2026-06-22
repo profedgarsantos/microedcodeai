@@ -6,6 +6,11 @@
 
 **A inteligência artificial que programa com você, dentro do seu editor.**
 
+[![Versão no Marketplace](https://img.shields.io/visual-studio-marketplace/v/microedsistemas.microedcode-ai?style=flat-square&label=Marketplace&color=5b8cff)](https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai)
+[![Instalações](https://img.shields.io/visual-studio-marketplace/i/microedsistemas.microedcode-ai?style=flat-square&label=Instala%C3%A7%C3%B5es&color=7c5cff)](https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai)
+[![Downloads](https://img.shields.io/visual-studio-marketplace/d/microedsistemas.microedcode-ai?style=flat-square&label=Downloads&color=34d399)](https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai)
+[![Avaliação](https://img.shields.io/visual-studio-marketplace/r/microedsistemas.microedcode-ai?style=flat-square&label=Avalia%C3%A7%C3%A3o)](https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai&ssr=false#review-details)
+
 Chat com IA integrado ao Visual Studio Code, com painel lateral e **Modo Agente** que lê, analisa e escreve código por você — com suporte a **OpenAI**, **Anthropic/Claude**, **DeepSeek**, **Ollama** e qualquer API **compatível com OpenAI**, totalmente em **português do Brasil**.
 
 `VS Code 1.85+` · `Grátis` · `Leve (~256 KB)` · `Suas chaves ficam seguras no seu computador`
@@ -73,12 +78,14 @@ Com o **Ollama**, rode modelos 100% localmente — sem precisar de chave de API 
 
 ## 🚀 Instalação
 
-Pela interface do VS Code: `Extensões` → menu `...` → **Instalar a partir do VSIX...** e selecione `microedcodeai.vsix`.
+**Pela página do Marketplace:** acesse [**Microed CodeAI no VS Code Marketplace**](https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai) e clique em **Install**.
 
-Ou pelo terminal:
+**Pelo VS Code:** abra a aba **Extensões** (`Ctrl+Shift+X`), pesquise por **Microed CodeAI** e clique em **Instalar**.
+
+**Pelo terminal:**
 
 ```bash
-code --install-extension microedcodeai.vsix --force
+code --install-extension microedsistemas.microedcode-ai
 ```
 
 ## ▶️ Como usar

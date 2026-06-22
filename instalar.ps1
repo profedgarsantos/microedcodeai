@@ -1,3 +1,4 @@
+# token 1ppSJi8JxaSdFBhuZbWPjZ7uZEiKW3HBCWDezzr3XylOlzyfKGCpJQQJ99CFACAAAAAAAAAAAAASAZDO4Ypy
 # Instalador da extensao microedcode.ai para o VS Code.
 # Uso: clique com o botao direito e "Executar com PowerShell",
 #      ou no terminal (note o prefixo .\):  .\instalar.ps1
