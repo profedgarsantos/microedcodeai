@@ -153,10 +153,13 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       case "alterarIdioma": {
         const novoIdioma = String(msg.idioma ?? "pt") as Idioma;
         definirIdioma(novoIdioma, this.contexto);
+        // Envia o system prompt padrão traduzido diretamente (não via lerConfig)
+        const systemPromptPadrao = t("defaultSystemPrompt");
         this.view?.webview.postMessage({
           tipo: "idiomaAlterado",
           idioma: novoIdioma,
           i18n: traducoesWebview(),
+          systemPromptPadrao,
         });
         break;
       }
@@ -373,7 +376,15 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       await cfg.update("temperature", dados.temperature, vscode.ConfigurationTarget.Global);
     }
     if (typeof dados.systemPrompt === "string") {
-      await cfg.update("systemPrompt", dados.systemPrompt, vscode.ConfigurationTarget.Global);
+      // Não persiste o system prompt se for igual ao padrão (permite troca de idioma)
+      const padraoPt = "Você é um assistente de programação prestativo. Responda sempre em português do Brasil.";
+      const padraoEn = "You are a helpful programming assistant. Always respond in English.";
+      const enviado = dados.systemPrompt.trim();
+      if (enviado === padraoPt || enviado === padraoEn) {
+        await cfg.update("systemPrompt", "", vscode.ConfigurationTarget.Global);
+      } else {
+        await cfg.update("systemPrompt", enviado, vscode.ConfigurationTarget.Global);
+      }
     }
     if (typeof dados.aplicarAutomaticamente === "boolean") {
       await cfg.update(

@@ -1,8 +1,8 @@
 {
   "name": "microedcode-ai",
-  "displayName": "Microed CodeAI",
-  "description": "Chat com IA integrado ao VS Code, com suporte a LLMs customizados (OpenAI, Anthropic, Ollama e compatíveis).",
-  "version": "4.0.1",
+  "displayName": "%displayName%",
+  "description": "AI chat integrated into VS Code, with Agent Mode that reads, analyzes and writes code. Supports OpenAI, Anthropic, DeepSeek, Ollama and compatible APIs.",
+  "version": "4.0.3",
   "publisher": "microedsistemas",
   "icon": "logof.png",
   "engines": {
@@ -32,7 +32,7 @@
       "activitybar": [
         {
           "id": "microedcodeai",
-          "title": "microedcode.ai",
+          "title": "%activitybar.title%",
           "icon": "media/logof.png"
         }
       ]
@@ -49,37 +49,37 @@
     "commands": [
       {
         "command": "microedcodeai.newChat",
-        "title": "microedcode.ai: Nova conversa",
+        "title": "%newChat%",
         "icon": "$(add)"
       },
       {
         "command": "microedcodeai.openSettings",
-        "title": "microedcode.ai: Configurar provedor de IA",
+        "title": "%openSettings%",
         "icon": "$(gear)"
       },
       {
         "command": "microedcodeai.clearKeys",
-        "title": "microedcode.ai: Limpar chaves de API salvas"
+        "title": "%clearKeys%"
       },
       {
         "command": "microedcodeai.about",
-        "title": "microedcode.ai: Sobre",
+        "title": "%about%",
         "icon": "$(info)"
       },
       {
         "command": "microedcodeai.gerarTesteUnitario",
-        "title": "Criar ou atualizar teste unitário"
+        "title": "%gerarTesteUnitario%"
       },
       {
         "command": "microedcodeai.historico",
-        "title": "microedcode.ai: Histórico de conversas",
+        "title": "%historico%",
         "icon": "$(history)"
       }
     ],
     "submenus": [
       {
         "id": "microedcodeai.contexto",
-        "label": "microedcode.ai"
+        "label": "%submenu%"
       }
     ],
     "menus": {
@@ -119,7 +119,7 @@
       ]
     },
     "configuration": {
-      "title": "microedcode.ai",
+      "title": "%configTitle%",
       "properties": {
         "microedcodeai.providerType": {
           "type": "string",
@@ -175,7 +175,11 @@
         },
         "microedcodeai.idioma": {
           "type": "string",
-          "enum": ["auto", "pt", "en"],
+          "enum": [
+            "auto",
+            "pt",
+            "en"
+          ],
           "enumDescriptions": [
             "Detectar automaticamente (português se VS Code estiver em português, inglês caso contrário)",
             "Português do Brasil",

@@ -686,6 +686,11 @@
       case "idiomaAlterado":
         i18n = msg.i18n || {};
         if (el.selIdioma) el.selIdioma.value = msg.idioma || "pt";
+        // Atualiza o system prompt com o padrão traduzido
+        if (msg.systemPromptPadrao && configAtual) {
+          configAtual.systemPrompt = msg.systemPromptPadrao;
+          el.system.value = msg.systemPromptPadrao;
+        }
         aplicarI18n();
         break;
 

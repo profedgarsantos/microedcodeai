@@ -1,0 +1,12 @@
+{
+  "displayName": "Microed CodeAI",
+  "activitybar.title": "Microed CodeAI",
+  "newChat": "Microed CodeAI: New conversation",
+  "openSettings": "Microed CodeAI: Configure AI provider",
+  "clearKeys": "Microed CodeAI: Clear saved API keys",
+  "about": "Microed CodeAI: About",
+  "gerarTesteUnitario": "Create or update unit test",
+  "historico": "Microed CodeAI: Chat history",
+  "submenu": "Microed CodeAI",
+  "configTitle": "Microed CodeAI"
+}
