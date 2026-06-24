@@ -4,39 +4,8 @@
 
   const vscode = acquireVsCodeApi();
 
-  // Sugestões de modelos por provedor.
-  const MODELOS = {
-    openai: [
-      "gpt-5.5",
-      "gpt-5.4",
-      "gpt-5.4-mini",
-      "gpt-5.3",
-      "gpt-5.2",
-    ],
-    anthropic: [
-      "claude-fable-5",
-      "claude-opus-4-7",
-      "claude-opus-4-6",
-      "claude-sonnet-4-6",
-      "claude-haiku-4-5",
-    ],
-    deepseek: [
-      "deepseek-v4-flash",
-      "deepseek-v4-pro",
-      "deepseek-chat",
-      "deepseek-reasoner",
-    ],
-    ollama: [
-      "llama3.3",
-      "qwen3",
-      "deepseek-r1",
-      "gemma3",
-      "mistral-small",
-      "qwen2.5-coder",
-      "phi4",
-    ],
-    "openai-compativel": [],
-  };
+  // Modelos são fornecidos pelo backend (src/modelos.ts) e chegam via msg.config.
+  var modelosAtuais = {};
 
   const BASE_PADRAO = {
     openai: "https://api.openai.com/v1",
@@ -67,7 +36,6 @@
     chkAgente: document.getElementById("chk-agente"),
     // config
     provider: document.getElementById("cfg-provider"),
-    modelo: document.getElementById("cfg-modelo"),
     modeloSelect: document.getElementById("cfg-modelo-select"),
     baseUrl: document.getElementById("cfg-baseurl"),
     apiKey: document.getElementById("cfg-apikey"),
@@ -79,12 +47,58 @@
     aplicarAuto: document.getElementById("cfg-aplicar-auto"),
     linkSobre: document.getElementById("cfg-link-sobre"),
     propaganda: document.getElementById("propaganda"),
+    btnAtualizarModelos: document.getElementById("btn-atualizar-modelos"),
     btnSalvar: document.getElementById("btn-salvar"),
     btnCancelar: document.getElementById("btn-cancelar"),
+    selIdioma: document.getElementById("sel-idioma"),
+    // historico e about
+    painelHistorico: document.getElementById("painel-historico"),
+    painelAbout: document.getElementById("painel-about"),
+    listaHistorico: document.getElementById("lista-historico"),
+    btnFecharHistorico: document.getElementById("btn-fechar-historico"),
+    btnFecharAbout: document.getElementById("btn-fechar-about"),
+    btnApagarHistorico: document.getElementById("btn-apagar-historico"),
+    aboutVersao: document.getElementById("about-versao"),
+    btnHistorico: document.getElementById("btn-historico"),
+    btnAbout: document.getElementById("btn-about"),
   };
 
   let configAtual = {};
+  let i18n = {};
   let gerando = false;
+
+  // Traduz uma chave (substitui %s pelos argumentos extras).
+  function _t(chave, a1, a2) {
+    var t = i18n[chave] || chave;
+    if (typeof a1 !== "undefined") { t = t.replace("%s", a1); }
+    if (typeof a2 !== "undefined") { t = t.replace("%s", a2); }
+    return t;
+  }
+
+  /** Aplica o i18n a todos os elementos com data-i18n, data-i18n-title e data-i18n-placeholder. */
+  function aplicarI18n() {
+    // data-i18n (textContent para texto puro, innerHTML para html)
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var chave = el.getAttribute("data-i18n");
+      var texto = i18n[chave] || chave;
+      // Se o texto original contém HTML, usa innerHTML; senão textContent
+      if (/<[a-z][\s\S]*>/i.test(texto)) {
+        el.innerHTML = texto;
+      } else {
+        el.textContent = texto;
+      }
+    });
+    // data-i18n-title
+    document.querySelectorAll("[data-i18n-title]").forEach(function (el) {
+      var chave = el.getAttribute("data-i18n-title");
+      el.title = i18n[chave] || chave;
+    });
+    // data-i18n-placeholder
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+      var chave = el.getAttribute("data-i18n-placeholder");
+      el.placeholder = i18n[chave] || chave;
+    });
+  }
   let bolhaAtual = null; // elemento .conteudo da resposta em andamento
   let textoAtual = ""; // texto bruto acumulado da resposta
 
@@ -132,14 +146,14 @@
       }
       const btn = document.createElement("button");
       btn.className = "btn-copiar";
-      btn.textContent = "Copiar";
+      btn.textContent = _t("wvCopiar");
       btn.addEventListener("click", function () {
         const codigo = pre.querySelector("code");
         const texto = codigo ? codigo.innerText : pre.innerText;
         navigator.clipboard.writeText(texto).then(function () {
-          btn.textContent = "Copiado!";
+          btn.textContent = _t("wvCopiado");
           setTimeout(function () {
-            btn.textContent = "Copiar";
+            btn.textContent = _t("wvCopiar");
           }, 1500);
         });
       });
@@ -196,11 +210,11 @@
     titulo.className = "proposta-titulo";
     var verbo = msg.aplicada
       ? msg.novo
-        ? "Arquivo criado: "
-        : "Arquivo atualizado: "
+        ? _t("proposalFileCreated")
+        : _t("proposalFileUpdated")
       : msg.novo
-      ? "Criar arquivo: "
-      : "Atualizar arquivo: ";
+      ? _t("proposalCreateFile")
+      : _t("proposalUpdateFile");
     titulo.textContent = verbo + msg.caminho;
     card.appendChild(titulo);
 
@@ -217,7 +231,7 @@
     if (!msg.aplicada) {
       const btnAplicar = document.createElement("button");
       btnAplicar.className = "primario";
-      btnAplicar.textContent = "Aplicar";
+      btnAplicar.textContent = _t("proposalApply");
       btnAplicar.addEventListener("click", function () {
         vscode.postMessage({ tipo: "aplicarProposta", id: msg.id });
       });
@@ -226,7 +240,7 @@
 
     const btnDiff = document.createElement("button");
     btnDiff.className = "secundario";
-    btnDiff.textContent = "Ver diff";
+    btnDiff.textContent = _t("proposalDiff");
     btnDiff.addEventListener("click", function () {
       vscode.postMessage({ tipo: "verDiff", id: msg.id });
     });
@@ -235,13 +249,13 @@
     if (!msg.aplicada) {
       const btnRejeitar = document.createElement("button");
       btnRejeitar.className = "secundario";
-      btnRejeitar.textContent = "Rejeitar";
+      btnRejeitar.textContent = _t("proposalReject");
       btnRejeitar.addEventListener("click", function () {
         vscode.postMessage({ tipo: "rejeitarProposta", id: msg.id });
         acoes.remove();
         const st = document.createElement("div");
         st.className = "proposta-status";
-        st.textContent = "Rejeitada.";
+        st.textContent = _t("proposalReject");
         card.appendChild(st);
       });
       acoes.appendChild(btnRejeitar);
@@ -253,7 +267,7 @@
       card.classList.add("proposta-aplicada");
       const st = document.createElement("div");
       st.className = "proposta-status";
-      st.textContent = "Alteração aplicada ao arquivo.";
+      st.textContent = _t("proposalApplied");
       card.appendChild(st);
     }
 
@@ -283,11 +297,12 @@
     if (gerando) {
       return;
     }
+    esconderPaineis();
     const texto = el.entrada.value.trim();
     if (texto.length === 0) {
       return;
     }
-    const alvo = criarBolha("Você", "usuario");
+    const alvo = criarBolha(_t("wvYou"), "usuario");
     alvo.innerHTML = renderInline(texto);
     el.entrada.value = "";
     ajustarAltura();
@@ -301,6 +316,83 @@
     el.entrada.disabled = estado;
   }
 
+  // ----------------------- Histórico ----------------------- //
+
+  function abrirHistorico() {
+    esconderPaineis();
+    if (el.painelHistorico) el.painelHistorico.classList.remove("oculto");
+    if (el.mensagens) el.mensagens.classList.add("oculto");
+    var bv = el.mensagens.querySelector(".boas-vindas");
+    if (bv) bv.remove();
+  }
+
+  function fecharHistorico() {
+    if (el.painelHistorico) el.painelHistorico.classList.add("oculto");
+    if (el.mensagens) el.mensagens.classList.remove("oculto");
+  }
+
+  function renderHistorico(conversas) {
+    if (!el.listaHistorico) return;
+    el.listaHistorico.innerHTML = "";
+    if (!conversas || conversas.length === 0) {
+      var vazia = document.createElement("div");
+      vazia.className = "item-historico";
+      vazia.style.fontStyle = "italic";
+      vazia.textContent = _t("historyEmptyList");
+      el.listaHistorico.appendChild(vazia);
+      return;
+    }
+
+    // Ordena da mais recente para mais antiga
+    var ordenadas = conversas.slice().sort(function (a, b) {
+      return new Date(b.data) - new Date(a.data);
+    });
+
+    for (var j = 0; j < ordenadas.length; j++) {
+      var c = ordenadas[j];
+      var item = document.createElement("div");
+      item.className = "item-historico";
+      item.dataset.id = c.id;
+
+      var dataEl = document.createElement("div");
+      dataEl.className = "item-historico-data";
+      var d = new Date(c.data);
+      dataEl.textContent = d.toLocaleDateString(undefined, { day: "2-digit", month: "2-digit", year: "numeric" }) + " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+
+      var titulo = document.createElement("div");
+      titulo.className = "item-historico-resumo";
+      titulo.textContent = c.titulo || c.resumo || "";
+
+      item.appendChild(dataEl);
+      item.appendChild(titulo);
+      item.addEventListener("click", function () {
+        vscode.postMessage({ tipo: "carregarConversaPorId", id: this.dataset.id });
+      });
+      el.listaHistorico.appendChild(item);
+    }
+  }
+
+  // ----------------------- About ----------------------- //
+
+  function abrirAbout(versao) {
+    esconderPaineis();
+    if (el.painelAbout) el.painelAbout.classList.remove("oculto");
+    if (el.mensagens) el.mensagens.classList.add("oculto");
+    if (el.aboutVersao) el.aboutVersao.textContent = versao || "?";
+    var bv = el.mensagens.querySelector(".boas-vindas");
+    if (bv) bv.remove();
+  }
+
+  function fecharAbout() {
+    if (el.painelAbout) el.painelAbout.classList.add("oculto");
+    if (el.mensagens) el.mensagens.classList.remove("oculto");
+  }
+
+  function esconderPaineis() {
+    if (el.painelHistorico) el.painelHistorico.classList.add("oculto");
+    if (el.painelAbout) el.painelAbout.classList.add("oculto");
+  }
+
   function ajustarAltura() {
     el.entrada.style.height = "auto";
     el.entrada.style.height = Math.min(el.entrada.scrollHeight, 180) + "px";
@@ -308,20 +400,9 @@
 
   // ----------------------- Configuração ----------------------- //
 
-  // Valor especial usado quando o usuário quer digitar o nome do modelo manualmente.
-  const MODELO_OUTRO = "__outro__";
-
-  function sincronizarInputModelo() {
-    const manual = el.modeloSelect.value === MODELO_OUTRO;
-    el.modelo.classList.toggle("oculto", !manual);
-    if (manual) {
-      el.modelo.focus();
-    }
-  }
-
   function atualizarListaModelos(tipo, modeloAtual) {
     el.modeloSelect.innerHTML = "";
-    const lista = MODELOS[tipo] || [];
+    const lista = (modelosAtuais[tipo] || []).slice();
 
     lista.forEach(function (m) {
       const opt = document.createElement("option");
@@ -330,27 +411,16 @@
       el.modeloSelect.appendChild(opt);
     });
 
-    const optOutro = document.createElement("option");
-    optOutro.value = MODELO_OUTRO;
-    optOutro.textContent = "Outro (digitar manualmente)";
-    el.modeloSelect.appendChild(optOutro);
-
-    // Pré-seleciona o modelo atual. Se não estiver na lista, usa o modo manual.
-    if (modeloAtual && lista.indexOf(modeloAtual) === -1) {
-      el.modeloSelect.value = MODELO_OUTRO;
-      el.modelo.value = modeloAtual;
-    } else if (modeloAtual) {
+    // Pré-seleciona o modelo atual.
+    if (modeloAtual && lista.indexOf(modeloAtual) !== -1) {
       el.modeloSelect.value = modeloAtual;
-      el.modelo.value = "";
     } else {
       el.modeloSelect.selectedIndex = 0;
-      el.modelo.value = "";
     }
-    sincronizarInputModelo();
 
     el.baseUrl.placeholder = BASE_PADRAO[tipo]
-      ? "padrão: " + BASE_PADRAO[tipo]
-      : "informe a URL base (obrigatório)";
+      ? _t("modelBaseUrlPlaceholder") + BASE_PADRAO[tipo]
+      : _t("modelBaseUrlPlaceholderRequired");
 
     atualizarLinkChave(tipo);
   }
@@ -367,11 +437,8 @@
     }
   }
 
-  // Retorna o modelo escolhido: o do select, ou o digitado no modo manual.
+  // Retorna o modelo escolhido no select.
   function modeloSelecionado() {
-    if (el.modeloSelect.value === MODELO_OUTRO) {
-      return el.modelo.value.trim();
-    }
     return el.modeloSelect.value;
   }
 
@@ -384,8 +451,8 @@
     el.system.value = configAtual.systemPrompt || "";
     el.aplicarAuto.checked = configAtual.aplicarAutomaticamente !== false;
     el.statusChave.textContent = configAtual.chaveDefinida
-      ? "Já existe uma chave salva para este provedor (deixe em branco para mantê-la)."
-      : "Nenhuma chave salva para este provedor.";
+      ? _t("configApiKeyStatusSaved")
+      : "";
     atualizarListaModelos(el.provider.value, configAtual.model || "");
     el.painelConfig.classList.remove("oculto");
   }
@@ -410,15 +477,14 @@
 
   function atualizarBarraStatus() {
     const tipo = configAtual.providerType || "openai";
-    const nomes = {
-      openai: "OpenAI",
-      anthropic: "Anthropic",
-      deepseek: "DeepSeek",
-      ollama: "Ollama",
-      "openai-compativel": "Compatível",
-    };
+    var nomes = {};
+    nomes["openai"] = _t("providerOpenai");
+    nomes["anthropic"] = _t("providerAnthropic");
+    nomes["deepseek"] = _t("providerDeepseek");
+    nomes["ollama"] = _t("providerOllama");
+    nomes["openai-compativel"] = _t("providerCompativel");
     el.statusModelo.textContent =
-      (nomes[tipo] || tipo) + " · " + (configAtual.model || "(sem modelo)");
+      (nomes[tipo] || tipo) + " \u00b7 " + (configAtual.model || _t("errorNoModel"));
   }
 
   // ----------------------- Eventos ----------------------- //
@@ -437,10 +503,8 @@
   });
 
   el.provider.addEventListener("change", function () {
-    // Ao trocar o provedor, lista os modelos dele e seleciona o primeiro.
     atualizarListaModelos(el.provider.value, "");
   });
-  el.modeloSelect.addEventListener("change", sincronizarInputModelo);
   el.linkChave.addEventListener("click", function (e) {
     e.preventDefault();
     const url = el.linkChave.dataset.url;
@@ -469,8 +533,59 @@
   });
   el.btnSalvar.addEventListener("click", salvarConfig);
   el.btnCancelar.addEventListener("click", fecharConfig);
+  if (el.btnAtualizarModelos) {
+    el.btnAtualizarModelos.addEventListener("click", function () {
+      vscode.postMessage({ tipo: "atualizarModelos" });
+      // Efeito visual de giro
+      el.btnAtualizarModelos.classList.add("girando");
+      setTimeout(function () {
+        el.btnAtualizarModelos.classList.remove("girando");
+      }, 300);
+    });
+  }
   el.chkAgente.addEventListener("change", function () {
     vscode.postMessage({ tipo: "alternarModoAgente", valor: el.chkAgente.checked });
+  });
+  if (el.selIdioma) {
+    el.selIdioma.addEventListener("change", function () {
+      vscode.postMessage({ tipo: "alterarIdioma", idioma: el.selIdioma.value });
+    });
+  }
+
+  // Histórico
+  if (el.btnHistorico) {
+    el.btnHistorico.addEventListener("click", function () {
+      vscode.postMessage({ tipo: "carregarHistorico" });
+    });
+  }
+  if (el.btnFecharHistorico) {
+    el.btnFecharHistorico.addEventListener("click", fecharHistorico);
+  }
+  if (el.btnApagarHistorico) {
+    el.btnApagarHistorico.addEventListener("click", function () {
+      if (confirm(_t("historyDeleteConfirm"))) {
+        vscode.postMessage({ tipo: "apagarHistorico" });
+      }
+    });
+  }
+
+  // About
+  if (el.btnAbout) {
+    el.btnAbout.addEventListener("click", function () {
+      vscode.postMessage({ tipo: "carregarAbout" });
+    });
+  }
+  if (el.btnFecharAbout) {
+    el.btnFecharAbout.addEventListener("click", fecharAbout);
+  }
+
+  // Links no painel about
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest("[data-url]");
+    if (link) {
+      e.preventDefault();
+      vscode.postMessage({ tipo: "abrirLink", url: link.dataset.url });
+    }
   });
 
   // ----------------------- Mensagens do backend ----------------------- //
@@ -480,7 +595,13 @@
     switch (msg.tipo) {
       case "config":
         configAtual = msg.dados;
+        i18n = msg.dados.i18n || {};
+        modelosAtuais = msg.dados.modelos || {};
         el.chkAgente.checked = !!msg.dados.modoAgente;
+        if (el.selIdioma && msg.dados.idioma) {
+          el.selIdioma.value = msg.dados.idioma;
+        }
+        aplicarI18n();
         atualizarBarraStatus();
         break;
 
@@ -489,7 +610,7 @@
         break;
 
       case "mensagemUsuario": {
-        var alvoUsuario = criarBolha("Você", "usuario");
+        var alvoUsuario = criarBolha(_t("wvYou"), "usuario");
         alvoUsuario.innerHTML = renderInline(msg.texto || "");
         break;
       }
@@ -503,18 +624,21 @@
         break;
 
       case "abrirConfiguracoes":
+        esconderPaineis();
         abrirConfig();
         break;
 
       case "limparTela":
+        fecharHistorico();
+        fecharAbout();
         el.mensagens.innerHTML =
-          '<div class="boas-vindas"><h3>Nova conversa</h3><p>Histórico limpo. Pode começar uma nova conversa.</p></div>';
+          '<div class="boas-vindas"><h3>' + _t("chatWelcomeTitle") + '</h3><p>' + _t("chatWelcomeText1") + '</p><p>' + _t("chatWelcomeText2") + '</p></div>';
         break;
 
       case "inicioResposta":
         definirGerando(true);
         textoAtual = "";
-        bolhaAtual = criarBolha("microedcode.ai", "assistente");
+        bolhaAtual = criarBolha(_t("appName"), "assistente");
         bolhaAtual.classList.add("cursor-digitando");
         break;
 
@@ -532,7 +656,7 @@
           if (msg.interrompido) {
             const aviso = document.createElement("div");
             aviso.className = "papel";
-            aviso.textContent = "(geração interrompida)";
+            aviso.textContent = _t("generationInterrupted");
             bolhaAtual.appendChild(aviso);
           }
           adicionarBotoesCopia(bolhaAtual);
@@ -545,13 +669,61 @@
       case "erro":
         definirGerando(false);
         bolhaAtual = null;
-        var bolhaErro = criarBolha("Erro", "erro");
-        bolhaErro.innerHTML = renderInline(msg.texto || "Erro desconhecido.");
+        var bolhaErro = criarBolha(_t("diagError"), "erro");
+        bolhaErro.innerHTML = renderInline(msg.texto || _t("errorIaUnknown"));
         break;
 
       case "info":
         el.statusModelo.textContent = msg.texto;
         setTimeout(atualizarBarraStatus, 2500);
+        break;
+
+      case "modelosAtualizados":
+        modelosAtuais = msg.modelos || {};
+        atualizarListaModelos(el.provider.value, configAtual.model || "");
+        break;
+
+      case "idiomaAlterado":
+        i18n = msg.i18n || {};
+        if (el.selIdioma) el.selIdioma.value = msg.idioma || "pt";
+        aplicarI18n();
+        break;
+
+      case "historicoCarregado":
+        renderHistorico(msg.conversas);
+        abrirHistorico();
+        break;
+
+      case "carregarConversa":
+        // Carrega as mensagens de uma conversa no chat
+        limparBoasVindas();
+        el.mensagens.innerHTML = "";
+        var msgs = msg.mensagens || [];
+        for (var i = 0; i < msgs.length; i++) {
+          var m = msgs[i];
+          var bolha = document.createElement("div");
+          bolha.className = "bolha " + (m.role === "user" ? "usuario" : "assistente");
+          var cab = document.createElement("div");
+          cab.className = "papel";
+          cab.textContent = m.role === "user" ? _t("wvYou") : _t("appName");
+          var conteudo = document.createElement("div");
+          conteudo.className = "conteudo";
+          conteudo.innerHTML = renderMarkdown(m.content);
+          bolha.appendChild(cab);
+          bolha.appendChild(conteudo);
+          el.mensagens.appendChild(bolha);
+        }
+        fecharHistorico();
+        fecharAbout();
+        rolarParaBaixo();
+        break;
+
+      case "mostrarAbout":
+        abrirAbout(msg.versao || "—");
+        // Carrega a versão se já tiver no config
+        if (configAtual && configAtual.versao) {
+          if (el.aboutVersao) el.aboutVersao.textContent = configAtual.versao;
+        }
         break;
     }
   });

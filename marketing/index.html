@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Microed CodeAI — IA de programação direto no seu VS Code</title>
-  <meta name="description" content="Microed CodeAI: chat com inteligência artificial integrado ao VS Code, com Modo Agente que lê, analisa e escreve código por você. Suporte a OpenAI, Anthropic, DeepSeek, Ollama e qualquer API compatível. 100% em português do Brasil." />
+  <title data-pt="Microed CodeAI — IA de programação direto no seu VS Code" data-en="Microed CodeAI — AI programming assistant right in your VS Code">Microed CodeAI — IA de programação direto no seu VS Code</title>
+  <meta name="description" content="Microed CodeAI: chat com inteligência artificial integrado ao VS Code, com Modo Agente que lê, analisa e escreve código por você." />
   <style>
     :root {
       --bg: #0b0f17;
@@ -48,6 +48,20 @@
     .nav-links { display: flex; gap: 22px; font-size: 0.92rem; color: var(--muted); }
     .nav-links a:hover { color: var(--fg); }
     @media (max-width: 720px) { .nav-links { display: none; } }
+
+    /* Language switch */
+    .lang-switch {
+      display: inline-flex; gap: 0; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border); margin-left: 12px; flex-shrink: 0;
+    }
+    .lang-switch button {
+      border: none; background: transparent; color: var(--muted);
+      padding: 5px 10px; font-size: 0.78rem; cursor: pointer; font-family: inherit;
+      border-right: 1px solid var(--border); transition: background .15s, color .15s;
+    }
+    .lang-switch button:last-child { border-right: 0; }
+    .lang-switch button.active { background: var(--accent); color: #fff; }
+    .lang-switch button:hover:not(.active) { background: var(--bg-soft); color: var(--fg); }
 
     /* Buttons */
     .btn {
@@ -191,13 +205,20 @@
         <span>Microed <span class="dot">CodeAI</span></span>
       </a>
       <nav class="nav-links">
-        <a href="#recursos">Recursos</a>
-        <a href="#agente">Modo Agente</a>
-        <a href="#provedores">Provedores</a>
-        <a href="#instalar">Instalação</a>
-        <a href="#faq">FAQ</a>
+        <a href="#recursos"    data-pt="Recursos" data-en="Features">Recursos</a>
+        <a href="#idiomas"     data-pt="Idiomas" data-en="Languages">Idiomas</a>
+        <a href="#agente"      data-pt="Modo Agente" data-en="Agent Mode">Modo Agente</a>
+        <a href="#historico"   data-pt="Histórico" data-en="History">Histórico</a>
+        <a href="#provedores"  data-pt="Provedores" data-en="Providers">Provedores</a>
+        <a href="#instalar"    data-pt="Instalação" data-en="Installation">Instalação</a>
+        <a href="#faq"         data-pt="FAQ" data-en="FAQ">FAQ</a>
       </nav>
-      <a class="btn btn-primary btn-sm" href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener">Instalar agora</a>
+      <div class="lang-switch">
+        <button data-lang="pt" class="active" title="Português">PT</button>
+        <button data-lang="en" title="English">EN</button>
+      </div>
+      <a class="btn btn-primary btn-sm" href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener"
+        data-pt="Instalar agora" data-en="Install now">Instalar agora</a>
     </div>
   </header>
 
@@ -205,58 +226,101 @@
   <section class="hero">
     <div class="wrap">
       <img class="logo-big" src="logo.png" alt="Microed CodeAI" />
-      <div class="badge">Extensão para Visual Studio Code · por Microed Sistemas</div>
-      <h1>A inteligência artificial que <span class="grad">programa com você</span>, dentro do seu editor</h1>
+      <div class="badge" data-pt="Extensão para Visual Studio Code · por Microed Sistemas" data-en="Visual Studio Code Extension · by Microed Sistemas">Extensão para Visual Studio Code · por Microed Sistemas</div>
+      <h1>
+        <span data-pt="A inteligência artificial que " data-en="The artificial intelligence that ">A inteligência artificial que </span><span class="grad" data-pt="programa com você" data-en="codes with you">programa com você</span><span data-pt=", dentro do seu editor" data-en=", inside your editor">, dentro do seu editor</span>
+      </h1>
       <p class="lead">
-        O <strong>Microed CodeAI</strong> traz um copiloto de IA direto para o painel lateral do VS Code.
-        Converse, peça análises e deixe o <strong>Modo Agente</strong> ler, entender e escrever código por você —
-        tudo em <strong>português do Brasil</strong> e com a IA que você escolher.
+        <span data-pt='O <strong>Microed CodeAI</strong> traz um copiloto de IA direto para o painel lateral do VS Code. Converse, peça análises e deixe o <strong>Modo Agente</strong> ler, entender e escrever código por você — com interface em <strong>português e inglês</strong> e a IA que você escolher.'
+              data-en='<strong>Microed CodeAI</strong> brings an AI copilot right into the VS Code sidebar. Chat, ask for analysis and let the <strong>Agent Mode</strong> read, understand and write code for you — with a <strong>bilingual interface</strong> and the AI of your choice.'>
+          O <strong>Microed CodeAI</strong> traz um copiloto de IA direto para o painel lateral do VS Code. Converse, peça análises e deixe o <strong>Modo Agente</strong> ler, entender e escrever código por você — com interface em <strong>português e inglês</strong> e a IA que você escolher.
+        </span>
       </p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener">⬇ Instalar pelo VS Code Marketplace</a>
-        <a class="btn btn-ghost" href="#instalar">Como instalar</a>
+        <a class="btn btn-primary" href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener"
+          data-pt="⬇ Instalar pelo VS Code Marketplace" data-en="⬇ Install from VS Code Marketplace">⬇ Instalar pelo VS Code Marketplace</a>
+        <a class="btn btn-ghost" href="#instalar" data-pt="Como instalar" data-en="How to install">Como instalar</a>
       </div>
-      <p class="hero-note">Grátis · disponível no VS Code Marketplace · suas chaves de API ficam seguras no seu computador</p>
+      <p class="hero-note" data-pt="Grátis · disponível no VS Code Marketplace · suas chaves de API ficam seguras no seu computador"
+                          data-en="Free · available on the VS Code Marketplace · your API keys stay secure on your computer">Grátis · disponível no VS Code Marketplace · suas chaves de API ficam seguras no seu computador</p>
     </div>
   </section>
 
   <section id="recursos">
     <div class="wrap">
       <div class="section-head">
-        <div class="eyebrow">Por que Microed CodeAI</div>
-        <h2>Tudo que você precisa para codar mais rápido</h2>
-        <p>Um assistente de IA completo, integrado ao seu fluxo de trabalho, sem sair do VS Code.</p>
+        <div class="eyebrow" data-pt="Por que Microed CodeAI" data-en="Why Microed CodeAI">Por que Microed CodeAI</div>
+        <h2 data-pt="Tudo que você precisa para codar mais rápido" data-en="Everything you need to code faster">Tudo que você precisa para codar mais rápido</h2>
+        <p data-pt="Um assistente de IA completo, integrado ao seu fluxo de trabalho, sem sair do VS Code."
+           data-en="A complete AI assistant, integrated into your workflow, without leaving VS Code.">Um assistente de IA completo, integrado ao seu fluxo de trabalho, sem sair do VS Code.</p>
       </div>
       <div class="grid">
         <div class="card">
           <div class="ico">💬</div>
-          <h3>Chat no painel lateral</h3>
-          <p>Converse com a IA enquanto programa, com respostas em tempo real (streaming), markdown e botão para copiar blocos de código.</p>
+          <h3 data-pt="Chat no painel lateral" data-en="Sidebar Chat">Chat no painel lateral</h3>
+          <p data-pt="Converse com a IA enquanto programa, com respostas em tempo real (streaming), markdown e botão para copiar blocos de código."
+             data-en="Chat with AI while coding, with real-time responses (streaming), markdown, and a copy button for code blocks.">Converse com a IA enquanto programa, com respostas em tempo real (streaming), markdown e botão para copiar blocos de código.</p>
         </div>
         <div class="card">
           <div class="ico">🤖</div>
-          <h3>Modo Agente</h3>
-          <p>A IA lê arquivos, busca no código, consulta erros do editor e propõe a criação ou atualização de arquivos inteiros.</p>
+          <h3 data-pt="Modo Agente" data-en="Agent Mode">Modo Agente</h3>
+          <p data-pt="A IA lê arquivos, busca no código, consulta erros do editor e propõe a criação ou atualização de arquivos inteiros."
+             data-en="AI reads files, searches code, checks editor errors and proposes creating or updating entire files.">A IA lê arquivos, busca no código, consulta erros do editor e propõe a criação ou atualização de arquivos inteiros.</p>
         </div>
         <div class="card">
           <div class="ico">✅</div>
-          <h3>Você no controle</h3>
-          <p>Cada alteração pode virar uma proposta: revise com “Ver diff” e confirme com “Aplicar”. Nada muda sem a sua aprovação.</p>
+          <h3 data-pt="Você no controle" data-en="You're in control">Você no controle</h3>
+          <p data-pt='Cada alteração pode virar uma proposta: revise com "Ver diff" e confirme com "Aplicar". Nada muda sem a sua aprovação.'
+             data-en='Each change becomes a proposal: review with "View diff" and confirm with "Apply". Nothing changes without your approval.'>Cada alteração pode virar uma proposta: revise com "Ver diff" e confirme com "Aplicar". Nada muda sem a sua aprovação.</p>
         </div>
         <div class="card">
           <div class="ico">🧪</div>
-          <h3>Testes em um clique</h3>
-          <p>Selecione um trecho ou arquivo e gere (ou atualize) testes unitários cobrindo casos de sucesso, de borda e de erro.</p>
+          <h3 data-pt="Testes em um clique" data-en="One-click tests">Testes em um clique</h3>
+          <p data-pt="Selecione um trecho ou arquivo e gere (ou atualize) testes unitários cobrindo casos de sucesso, de borda e de erro."
+             data-en="Select a snippet or file and generate (or update) unit tests covering success, edge and error cases.">Selecione um trecho ou arquivo e gere (ou atualize) testes unitários cobrindo casos de sucesso, de borda e de erro.</p>
         </div>
         <div class="card">
           <div class="ico">🔌</div>
-          <h3>Sua IA, sua escolha</h3>
-          <p>OpenAI, Anthropic/Claude, DeepSeek, Ollama (local) ou qualquer API compatível com OpenAI. Troque de modelo quando quiser.</p>
+          <h3 data-pt="Sua IA, sua escolha" data-en="Your AI, your choice">Sua IA, sua escolha</h3>
+          <p data-pt="OpenAI, Anthropic/Claude, DeepSeek, Ollama (local) ou qualquer API compatível com OpenAI. Troque de modelo quando quiser."
+             data-en="OpenAI, Anthropic/Claude, DeepSeek, Ollama (local) or any OpenAI-compatible API. Switch models anytime.">OpenAI, Anthropic/Claude, DeepSeek, Ollama (local) ou qualquer API compatível com OpenAI. Troque de modelo quando quiser.</p>
         </div>
         <div class="card">
           <div class="ico">🔒</div>
-          <h3>Privacidade em primeiro lugar</h3>
-          <p>As chaves de API ficam guardadas com segurança no SecretStorage do VS Code, no seu próprio computador.</p>
+          <h3 data-pt="Privacidade em primeiro lugar" data-en="Privacy first">Privacidade em primeiro lugar</h3>
+          <p data-pt="As chaves de API ficam guardadas com segurança no SecretStorage do VS Code, no seu próprio computador."
+             data-en="API keys are securely stored in VS Code's SecretStorage, on your own computer.">As chaves de API ficam guardadas com segurança no SecretStorage do VS Code, no seu próprio computador.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="idiomas" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="wrap" style="text-align: center;">
+      <div class="section-head">
+        <div class="eyebrow" data-pt="Idiomas" data-en="Languages">Idiomas</div>
+        <h2 data-pt="Interface em português e inglês" data-en="Bilingual interface">Interface em português e inglês</h2>
+        <p data-pt="O Microed CodeAI detecta automaticamente o idioma do seu VS Code. Você também pode alternar entre português e inglês a qualquer momento pelo seletor no painel de configuração."
+           data-en="Microed CodeAI automatically detects your VS Code language. You can also switch between Portuguese and English anytime via the language selector in the settings panel.">O Microed CodeAI detecta automaticamente o idioma do seu VS Code. Você também pode alternar entre português e inglês a qualquer momento pelo seletor no painel de configuração.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="ico">🌐</div>
+          <h3 data-pt="Detecção automática" data-en="Auto-detection">Detecção automática</h3>
+          <p data-pt="VS Code em português? A extensão segue automaticamente. Em inglês ou qualquer outro idioma, alterna para inglês."
+             data-en="VS Code in Portuguese? The extension follows automatically. In English or any other language, it switches to English.">VS Code em português? A extensão segue automaticamente. Em inglês ou qualquer outro idioma, alterna para inglês.</p>
+        </div>
+        <div class="card">
+          <div class="ico">🎛️</div>
+          <h3 data-pt="Seletor visual" data-en="Visual selector">Seletor visual</h3>
+          <p data-pt='Dropdown "Português / English" no painel de configuração. A escolha é salva e mantida ao reabrir o VS Code.'
+             data-en='Dropdown "Português / English" in the settings panel. Your choice is saved and kept when reopening VS Code.'>Dropdown "Português / English" no painel de configuração. A escolha é salva e mantida ao reabrir o VS Code.</p>
+        </div>
+        <div class="card">
+          <div class="ico">📝</div>
+          <h3 data-pt="Conteúdo completo traduzido" data-en="Full translation">Conteúdo completo traduzido</h3>
+          <p data-pt="Todos os textos são traduzidos: painel de configuração, chat, botões, mensagens de erro e ações do agente."
+             data-en="All texts are translated: settings panel, chat, buttons, error messages and agent actions.">Todos os textos são traduzidos: painel de configuração, chat, botões, mensagens de erro e ações do agente.</p>
         </div>
       </div>
     </div>
@@ -265,38 +329,40 @@
   <section id="agente" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
     <div class="wrap split">
       <div>
-        <div class="eyebrow">Modo Agente</div>
-        <h2 style="font-size: clamp(1.7rem, 3.5vw, 2.4rem); margin: 10px 0 14px;">Um agente que entende o seu projeto</h2>
-        <p style="color: var(--muted); margin: 0;">
-          Com o Modo Agente ativado, o Microed CodeAI trabalha em passos: investiga a base de código,
-          junta o contexto necessário e raciocina até propor a melhor solução — como um par de programação que nunca dorme.
+        <div class="eyebrow" data-pt="Modo Agente" data-en="Agent Mode">Modo Agente</div>
+        <h2 style="font-size: clamp(1.7rem, 3.5vw, 2.4rem); margin: 10px 0 14px;"
+            data-pt="Um agente que entende o seu projeto" data-en="An agent that understands your project">Um agente que entende o seu projeto</h2>
+        <p style="color: var(--muted); margin: 0;"
+           data-pt="Com o Modo Agente ativado, o Microed CodeAI trabalha em passos: investiga a base de código, junta o contexto necessário e raciocina até propor a melhor solução — como um par de programação que nunca dorme."
+           data-en="With Agent Mode enabled, Microed CodeAI works in steps: investigates the codebase, gathers the necessary context and reasons until it proposes the best solution — like a pair programming partner that never sleeps.">
+          Com o Modo Agente ativado, o Microed CodeAI trabalha em passos: investiga a base de código, junta o contexto necessário e raciocina até propor a melhor solução — como um par de programação que nunca dorme.
         </p>
         <ul class="feature-list">
-          <li><span class="chk">✓</span> <span><b>Analisa a lógica</b> — lista e lê arquivos, busca trechos no código.</span></li>
-          <li><span class="chk">✓</span> <span><b>Diagnostica bugs</b> — consulta erros e avisos do editor.</span></li>
-          <li><span class="chk">✓</span> <span><b>Cria e atualiza código</b> — propõe o conteúdo completo de arquivos.</span></li>
-          <li><span class="chk">✓</span> <span><b>Usa o contexto do editor</b> — considera o arquivo ativo e a seleção.</span></li>
+          <li><span class="chk">✓</span><span data-pt=' <b>Analisa a lógica</b> — lista e lê arquivos, busca trechos no código.' data-en=' <b>Analyzes logic</b> — lists and reads files, searches code snippets.'> <b>Analisa a lógica</b> — lista e lê arquivos, busca trechos no código.</span></li>
+          <li><span class="chk">✓</span><span data-pt=' <b>Diagnostica bugs</b> — consulta erros e avisos do editor.' data-en=' <b>Diagnoses bugs</b> — checks editor errors and warnings.'> <b>Diagnostica bugs</b> — consulta erros e avisos do editor.</span></li>
+          <li><span class="chk">✓</span><span data-pt=' <b>Cria e atualiza código</b> — propõe o conteúdo completo de arquivos.' data-en=' <b>Creates and updates code</b> — proposes full file content.'> <b>Cria e atualiza código</b> — propõe o conteúdo completo de arquivos.</span></li>
+          <li><span class="chk">✓</span><span data-pt=' <b>Usa o contexto do editor</b> — considera o arquivo ativo e a seleção.' data-en=' <b>Uses editor context</b> — considers the active file and selection.'> <b>Usa o contexto do editor</b> — considera o arquivo ativo e a seleção.</span></li>
         </ul>
       </div>
       <div class="panel" aria-hidden="true">
         <div class="panel-top"><span></span><span></span><span></span></div>
         <div class="panel-body">
           <div class="chat-row">
-            <div class="who">Você</div>
-            <div class="bubble-user">Corrija o bug de validação no formulário de login.</div>
+            <div class="who" data-pt="Você" data-en="You">Você</div>
+            <div class="bubble-user" data-pt="Corrija o bug de validação no formulário de login." data-en="Fix the validation bug in the login form.">Corrija o bug de validação no formulário de login.</div>
           </div>
           <div class="chat-row">
             <div class="who">Microed CodeAI</div>
             <div class="bubble-ai">
-              <div class="tag-action">Lendo src/login.ts…</div><br />
-              <div class="tag-action">Analisando diagnósticos…</div>
+              <div class="tag-action" data-pt="Lendo src/login.ts…" data-en="Reading src/login.ts…">Lendo src/login.ts…</div><br />
+              <div class="tag-action" data-pt="Analisando diagnósticos…" data-en="Analyzing diagnostics…">Analisando diagnósticos…</div>
               <div class="prop">
                 <b>src/login.ts</b><br />
-                Adicionada checagem de e-mail vazio antes do submit.
+                <span data-pt="Adicionada checagem de e-mail vazio antes do submit." data-en="Added empty email check before submit.">Adicionada checagem de e-mail vazio antes do submit.</span>
                 <div class="acts">
-                  <span class="mini-btn go">Aplicar</span>
-                  <span class="mini-btn">Ver diff</span>
-                  <span class="mini-btn">Rejeitar</span>
+                  <span class="mini-btn go" data-pt="Aplicar" data-en="Apply">Aplicar</span>
+                  <span class="mini-btn" data-pt="Ver diff" data-en="View diff">Ver diff</span>
+                  <span class="mini-btn" data-pt="Rejeitar" data-en="Reject">Rejeitar</span>
                 </div>
               </div>
             </div>
@@ -306,23 +372,87 @@
     </div>
   </section>
 
+  <section id="historico">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow" data-pt="Histórico" data-en="History">Histórico</div>
+        <h2 data-pt="Histórico de conversas integrado" data-en="Built-in conversation history">Histórico de conversas integrado</h2>
+        <p data-pt="Todas as conversas são salvas automaticamente. Acesse, restaure ou apague a qualquer momento."
+           data-en="All conversations are saved automatically. Access, restore or delete at any time.">Todas as conversas são salvas automaticamente. Acesse, restaure ou apague a qualquer momento.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="ico">💾</div>
+          <h3 data-pt="Salvamento automático" data-en="Auto-save">Salvamento automático</h3>
+          <p data-pt="Cada conversa é salva automaticamente no projeto (.microedcodeai/historico.json). Nada se perde."
+             data-en="Each conversation is saved automatically in the project (.microedcodeai/historico.json). Nothing is lost.">Cada conversa é salva automaticamente no projeto (.microedcodeai/historico.json). Nada se perde.</p>
+        </div>
+        <div class="card">
+          <div class="ico">📋</div>
+          <h3 data-pt="Painel de histórico" data-en="History panel">Painel de histórico</h3>
+          <p data-pt="Botão 📋 na barra inferior exibe todas as conversas agrupadas por data, da mais recente à mais antiga."
+             data-en="The 📋 button in the bottom bar shows all conversations grouped by date, from newest to oldest.">Botão 📋 na barra inferior exibe todas as conversas agrupadas por data, da mais recente à mais antiga.</p>
+        </div>
+        <div class="card">
+          <div class="ico">🔄</div>
+          <h3 data-pt="Restauração com um clique" data-en="One-click restore">Restauração com um clique</h3>
+          <p data-pt="Clique em qualquer item do histórico para carregar a conversa completa de volta no chat."
+             data-en="Click any history item to load the full conversation back into the chat.">Clique em qualquer item do histórico para carregar a conversa completa de volta no chat.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="atualizacao-modelos" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="wrap" style="text-align: center;">
+      <div class="section-head">
+        <div class="eyebrow" data-pt="Modelos sempre atualizados" data-en="Always up-to-date models">Modelos sempre atualizados</div>
+        <h2 data-pt="Atualize a lista de modelos com um clique" data-en="Update the model list with one click">Atualize a lista de modelos com um clique</h2>
+        <p data-pt="Novos modelos são lançados constantemente. Clique no botão ↻ ao lado do seletor de modelo para buscar a lista mais recente — sem precisar reinstalar a extensão."
+           data-en="New models are constantly released. Click the ↻ button next to the model selector to fetch the latest list — no need to reinstall the extension.">Novos modelos são lançados constantemente. Clique no botão ↻ ao lado do seletor de modelo para buscar a lista mais recente — sem precisar reinstalar a extensão.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="ico">🌐</div>
+          <h3 data-pt="Busca online" data-en="Online fetch">Busca online</h3>
+          <p data-pt="O botão ↻ busca a lista atualizada do JSON público em microed.com.br, sem necessidade de chave de API."
+             data-en="The ↻ button fetches the updated list from the public JSON at microed.com.br, no API key needed.">O botão ↻ busca a lista atualizada do JSON público em microed.com.br, sem necessidade de chave de API.</p>
+        </div>
+        <div class="card">
+          <div class="ico">💿</div>
+          <h3 data-pt="Cache local" data-en="Local cache">Cache local</h3>
+          <p data-pt="O resultado é salvo em cache local (.microedcodeai/modelos.json) e persiste entre sessões — mesmo offline."
+             data-en="The result is saved to local cache (.microedcodeai/modelos.json) and persists between sessions — even offline.">O resultado é salvo em cache local (.microedcodeai/modelos.json) e persiste entre sessões — mesmo offline.</p>
+        </div>
+        <div class="card">
+          <div class="ico">ℹ️</div>
+          <h3 data-pt="Painel Sobre" data-en="About panel">Painel Sobre</h3>
+          <p data-pt="Botão ℹ️ na barra inferior exibe informações da extensão: versão, descrição e links para o site e Marketplace."
+             data-en="The ℹ️ button in the bottom bar shows extension info: version, description and links to the website and Marketplace.">Botão ℹ️ na barra inferior exibe informações da extensão: versão, descrição e links para o site e Marketplace.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="provedores">
     <div class="wrap">
       <div class="section-head">
-        <div class="eyebrow">Compatibilidade</div>
-        <h2>Funciona com a IA que você já usa</h2>
-        <p>Escolha o provedor e o modelo no painel de configuração, ou digite o nome do modelo manualmente.</p>
+        <div class="eyebrow" data-pt="Compatibilidade" data-en="Compatibility">Compatibilidade</div>
+        <h2 data-pt="Funciona com a IA que você já usa" data-en="Works with the AI you already use">Funciona com a IA que você já usa</h2>
+        <p data-pt="Escolha o provedor e o modelo no painel de configuração, ou digite o nome do modelo manualmente."
+           data-en="Choose the provider and model in the settings panel, or type the model name manually.">Escolha o provedor e o modelo no painel de configuração, ou digite o nome do modelo manualmente.</p>
       </div>
       <div class="providers">
         <div class="chip">🟢 OpenAI</div>
         <div class="chip">🟣 Anthropic / Claude</div>
         <div class="chip">🔵 DeepSeek</div>
-        <div class="chip">🦙 Ollama (local)</div>
-        <div class="chip">⚙️ Compatível com OpenAI</div>
+        <div class="chip" data-pt="🦙 Ollama (local)" data-en="🦙 Ollama (local)">🦙 Ollama (local)</div>
+        <div class="chip" data-pt="⚙️ Compatível com OpenAI" data-en="⚙️ OpenAI Compatible">⚙️ Compatível com OpenAI</div>
       </div>
-      <p style="text-align:center; color: var(--muted); margin-top: 20px; font-size: 0.92rem;">
-        LM Studio, Groq, OpenRouter e outros serviços compatíveis com o formato da OpenAI também funcionam.
-        Com o Ollama, rode modelos 100% localmente — sem precisar de chave de API.
+      <p style="text-align:center; color: var(--muted); margin-top: 20px; font-size: 0.92rem;"
+         data-pt="LM Studio, Groq, OpenRouter e outros serviços compatíveis com o formato da OpenAI também funcionam. Com o Ollama, rode modelos 100% localmente — sem precisar de chave de API."
+         data-en="LM Studio, Groq, OpenRouter and other OpenAI-compatible services also work. With Ollama, run models 100% locally — no API key needed.">
+        LM Studio, Groq, OpenRouter e outros serviços compatíveis com o formato da OpenAI também funcionam. Com o Ollama, rode modelos 100% localmente — sem precisar de chave de API.
       </p>
     </div>
   </section>
@@ -330,30 +460,40 @@
   <section id="instalar" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
     <div class="wrap">
       <div class="section-head">
-        <div class="eyebrow">Instalação</div>
-        <h2>Pronto para usar em 3 passos</h2>
-        <p>Instale direto pelo VS Code Marketplace. Leva menos de um minuto.</p>
+        <div class="eyebrow" data-pt="Instalação" data-en="Installation">Instalação</div>
+        <h2 data-pt="Pronto para usar em 3 passos" data-en="Ready to use in 3 steps">Pronto para usar em 3 passos</h2>
+        <p data-pt="Instale direto pelo VS Code Marketplace. Leva menos de um minuto."
+           data-en="Install directly from the VS Code Marketplace. Takes less than a minute.">Instale direto pelo VS Code Marketplace. Leva menos de um minuto.</p>
       </div>
       <div class="steps">
         <div class="step">
-          <h4>Abra as Extensões</h4>
-          <p>No VS Code, abra a aba <b>Extensões</b> pelo atalho <code>Ctrl+Shift+X</code> (ou <code>Cmd+Shift+X</code> no Mac).</p>
+          <h4 data-pt="Abra as Extensões" data-en="Open Extensions">Abra as Extensões</h4>
+          <p data-pt='No VS Code, abra a aba <b>Extensões</b> pelo atalho <code>Ctrl+Shift+X</code> (ou <code>Cmd+Shift+X</code> no Mac).'
+             data-en='In VS Code, open the <b>Extensions</b> tab with the shortcut <code>Ctrl+Shift+X</code> (or <code>Cmd+Shift+X</code> on Mac).'>No VS Code, abra a aba <b>Extensões</b> pelo atalho <code>Ctrl+Shift+X</code> (ou <code>Cmd+Shift+X</code> no Mac).</p>
         </div>
         <div class="step">
-          <h4>Busque a extensão</h4>
-          <p>Pesquise por <b>Microed CodeAI</b> e localize a extensão publicada por <b>Microed Sistemas</b>.</p>
+          <h4 data-pt="Busque a extensão" data-en="Search for the extension">Busque a extensão</h4>
+          <p data-pt='Pesquise por <b>Microed CodeAI</b> e localize a extensão publicada por <b>Microed Sistemas</b>.'
+             data-en='Search for <b>Microed CodeAI</b> and locate the extension published by <b>Microed Sistemas</b>.'>Pesquise por <b>Microed CodeAI</b> e localize a extensão publicada por <b>Microed Sistemas</b>.</p>
         </div>
         <div class="step">
-          <h4>Instale e use</h4>
-          <p>Clique em <b>Instalar</b>, depois no ícone do <b>Microed CodeAI</b> na barra lateral, configure o provedor e a chave de API e converse.</p>
+          <h4 data-pt="Instale e use" data-en="Install and use">Instale e use</h4>
+          <p data-pt='Clique em <b>Instalar</b>, depois no ícone do <b>Microed CodeAI</b> na barra lateral, configure o provedor e a chave de API e converse.'
+             data-en='Click <b>Install</b>, then click the <b>Microed CodeAI</b> icon in the sidebar, configure the provider and API key, and start chatting.'>Clique em <b>Instalar</b>, depois no ícone do <b>Microed CodeAI</b> na barra lateral, configure o provedor e a chave de API e converse.</p>
         </div>
       </div>
       <div style="margin-top: 28px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px;">
-        <b>Prefere a linha de comando?</b>
+        <b data-pt="Prefere a linha de comando?" data-en="Prefer the command line?">Prefere a linha de comando?</b>
         <p style="color: var(--muted); margin: 8px 0 0;">
-          Com o <code style="background:#0a0e16;border:1px solid var(--border);border-radius:6px;padding:2px 6px;">code</code> no PATH, instale direto pelo terminal:
+          <span data-pt='Com o <code style="background:#0a0e16;border:1px solid var(--border);border-radius:6px;padding:2px 6px;">code</code> no PATH, instale direto pelo terminal:'
+                data-en='With <code style="background:#0a0e16;border:1px solid var(--border);border-radius:6px;padding:2px 6px;">code</code> in your PATH, install directly from the terminal:'>
+            Com o <code style="background:#0a0e16;border:1px solid var(--border);border-radius:6px;padding:2px 6px;">code</code> no PATH, instale direto pelo terminal:
+          </span>
           <code style="display:block;margin-top:8px;background:#0a0e16;border:1px solid var(--border);border-radius:6px;padding:10px 12px;">code --install-extension microedsistemas.microedcode-ai</code>
-          Ou acesse a <a href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener" style="color: var(--accent);">página da extensão no Marketplace</a> e clique em <b>Install</b>.
+          <span data-pt='Ou acesse a <a href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener" style="color: var(--accent);">página da extensão no Marketplace</a> e clique em <b>Install</b>.'
+                data-en='Or visit the <a href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener" style="color: var(--accent);">extension page on the Marketplace</a> and click <b>Install</b>.'>
+            Ou acesse a <a href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener" style="color: var(--accent);">página da extensão no Marketplace</a> e clique em <b>Install</b>.
+          </span>
         </p>
       </div>
     </div>
@@ -362,13 +502,16 @@
   <section>
     <div class="wrap">
       <div class="cta">
-        <h2>Acelere seu código hoje mesmo</h2>
-        <p>Leve, gratuito e em português. Instale o Microed CodeAI e tenha um copiloto de IA dentro do seu editor.</p>
+        <h2 data-pt="Acelere seu código hoje mesmo" data-en="Speed up your code today">Acelere seu código hoje mesmo</h2>
+        <p data-pt="Leve, gratuito e em português. Instale o Microed CodeAI e tenha um copiloto de IA dentro do seu editor."
+           data-en="Lightweight, free. Install Microed CodeAI and have an AI copilot inside your editor.">Leve, gratuito e em português. Instale o Microed CodeAI e tenha um copiloto de IA dentro do seu editor.</p>
         <div class="cta-actions">
-          <a class="btn btn-primary" href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener">⬇ Instalar pelo VS Code Marketplace</a>
-          <a class="btn btn-ghost" href="#instalar">Como instalar</a>
+          <a class="btn btn-primary" href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener"
+            data-pt="⬇ Instalar pelo VS Code Marketplace" data-en="⬇ Install from VS Code Marketplace">⬇ Instalar pelo VS Code Marketplace</a>
+          <a class="btn btn-ghost" href="#instalar" data-pt="Como instalar" data-en="How to install">Como instalar</a>
         </div>
-        <div class="filemeta">Disponível no VS Code Marketplace · compatível com VS Code 1.85 ou superior</div>
+        <div class="filemeta" data-pt="Disponível no VS Code Marketplace · compatível com VS Code 1.85 ou superior"
+                              data-en="Available on the VS Code Marketplace · compatible with VS Code 1.85 or higher">Disponível no VS Code Marketplace · compatível com VS Code 1.85 ou superior</div>
       </div>
     </div>
   </section>
@@ -376,28 +519,48 @@
   <section id="faq" class="faq">
     <div class="wrap" style="max-width: 820px;">
       <div class="section-head">
-        <div class="eyebrow">Dúvidas</div>
-        <h2>Perguntas frequentes</h2>
+        <div class="eyebrow" data-pt="Dúvidas" data-en="Questions">Dúvidas</div>
+        <h2 data-pt="Perguntas frequentes" data-en="Frequently asked questions">Perguntas frequentes</h2>
       </div>
       <details open>
-        <summary>O Microed CodeAI é gratuito?</summary>
-        <p>Sim. A extensão é gratuita. Você só precisa de uma chave de API do provedor de IA que escolher (ou usar o Ollama, que roda localmente sem chave).</p>
+        <summary data-pt="O Microed CodeAI é gratuito?" data-en="Is Microed CodeAI free?">O Microed CodeAI é gratuito?</summary>
+        <p data-pt="Sim. A extensão é gratuita. Você só precisa de uma chave de API do provedor de IA que escolher (ou usar o Ollama, que roda localmente sem chave)."
+           data-en="Yes. The extension is free. You only need an API key from the AI provider you choose (or use Ollama, which runs locally without a key).">Sim. A extensão é gratuita. Você só precisa de uma chave de API do provedor de IA que escolher (ou usar o Ollama, que roda localmente sem chave).</p>
       </details>
       <details>
-        <summary>Minhas chaves de API ficam seguras?</summary>
-        <p>Sim. As chaves são guardadas no SecretStorage do VS Code, armazenado de forma segura no seu próprio computador — nunca em arquivos do projeto.</p>
+        <summary data-pt="A extensão está disponível em outros idiomas?" data-en="Is the extension available in other languages?">A extensão está disponível em outros idiomas?</summary>
+        <p data-pt="Sim. A interface está disponível em português e inglês, com detecção automática pelo VS Code e seletor manual no painel de configuração."
+           data-en="Yes. The interface is available in Portuguese and English, with auto-detection from VS Code and a manual selector in the settings panel.">Sim. A interface está disponível em português e inglês, com detecção automática pelo VS Code e seletor manual no painel de configuração.</p>
       </details>
       <details>
-        <summary>A IA altera meus arquivos sem permissão?</summary>
-        <p>Você decide. No modo de aprovação manual, cada mudança vira uma proposta com os botões “Aplicar”, “Ver diff” e “Rejeitar”. Nada é alterado sem a sua confirmação.</p>
+        <summary data-pt="Minhas chaves de API ficam seguras?" data-en="Are my API keys secure?">Minhas chaves de API ficam seguras?</summary>
+        <p data-pt="Sim. As chaves são guardadas no SecretStorage do VS Code, armazenado de forma segura no seu próprio computador — nunca em arquivos do projeto."
+           data-en="Yes. Keys are stored in VS Code's SecretStorage, securely kept on your own computer — never in project files.">Sim. As chaves são guardadas no SecretStorage do VS Code, armazenado de forma segura no seu próprio computador — nunca em arquivos do projeto.</p>
       </details>
       <details>
-        <summary>Quais modelos de IA são suportados?</summary>
-        <p>OpenAI, Anthropic/Claude, DeepSeek, Ollama (local) e qualquer API compatível com OpenAI, como LM Studio, Groq e OpenRouter.</p>
+        <summary data-pt="A IA altera meus arquivos sem permissão?" data-en="Does the AI change my files without permission?">A IA altera meus arquivos sem permissão?</summary>
+        <p data-pt='Você decide. No modo de aprovação manual, cada mudança vira uma proposta com os botões "Aplicar", "Ver diff" e "Rejeitar". Nada é alterado sem a sua confirmação.'
+           data-en='You decide. In manual approval mode, each change becomes a proposal with "Apply", "View diff" and "Reject" buttons. Nothing is changed without your confirmation.'>Você decide. No modo de aprovação manual, cada mudança vira uma proposta com os botões "Aplicar", "Ver diff" e "Rejeitar". Nada é alterado sem a sua confirmação.</p>
       </details>
       <details>
-        <summary>Preciso de internet?</summary>
-        <p>Para provedores em nuvem, sim. Com o Ollama você roda modelos localmente e pode trabalhar de forma totalmente offline.</p>
+        <summary data-pt="As conversas ficam salvas?" data-en="Are conversations saved?">As conversas ficam salvas?</summary>
+        <p data-pt="Sim. O histórico é salvo automaticamente no projeto. Use o botão 📋 na barra inferior para acessar, restaurar ou apagar conversas anteriores."
+           data-en="Yes. History is saved automatically in the project. Use the 📋 button in the bottom bar to access, restore or delete previous conversations.">Sim. O histórico é salvo automaticamente no projeto. Use o botão 📋 na barra inferior para acessar, restaurar ou apagar conversas anteriores.</p>
+      </details>
+      <details>
+        <summary data-pt="Como atualizo a lista de modelos de IA?" data-en="How do I update the AI model list?">Como atualizo a lista de modelos de IA?</summary>
+        <p data-pt="Clique no botão ↻ ao lado do seletor de modelo no painel de configuração. A extensão busca a lista mais recente do JSON público e salva em cache local."
+           data-en="Click the ↻ button next to the model selector in the settings panel. The extension fetches the latest list from the public JSON and saves it to local cache.">Clique no botão ↻ ao lado do seletor de modelo no painel de configuração. A extensão busca a lista mais recente do JSON público e salva em cache local.</p>
+      </details>
+      <details>
+        <summary data-pt="Quais modelos de IA são suportados?" data-en="Which AI models are supported?">Quais modelos de IA são suportados?</summary>
+        <p data-pt="OpenAI, Anthropic/Claude, DeepSeek, Ollama (local) e qualquer API compatível com OpenAI, como LM Studio, Groq e OpenRouter."
+           data-en="OpenAI, Anthropic/Claude, DeepSeek, Ollama (local) and any OpenAI-compatible API, such as LM Studio, Groq and OpenRouter.">OpenAI, Anthropic/Claude, DeepSeek, Ollama (local) e qualquer API compatível com OpenAI, como LM Studio, Groq e OpenRouter.</p>
+      </details>
+      <details>
+        <summary data-pt="Preciso de internet?" data-en="Do I need internet?">Preciso de internet?</summary>
+        <p data-pt="Para provedores em nuvem, sim. Com o Ollama você roda modelos localmente e pode trabalhar de forma totalmente offline."
+           data-en="For cloud providers, yes. With Ollama you can run models locally and work completely offline.">Para provedores em nuvem, sim. Com o Ollama você roda modelos localmente e pode trabalhar de forma totalmente offline.</p>
       </details>
     </div>
   </section>
@@ -408,10 +571,63 @@
         <img src="logo.png" alt="Microed CodeAI" style="width:26px;height:26px;border-radius:6px;" />
         <span>Microed <span style="color: var(--accent);">CodeAI</span></span>
       </div>
-      <p>Extensão criada por <strong>Microed Sistemas</strong>.</p>
+      <p data-pt="Extensão criada por <strong>Microed Sistemas</strong>."
+         data-en="Extension created by <strong>Microed Sistemas</strong>.">Extensão criada por <strong>Microed Sistemas</strong>.</p>
       <p><a class="site" href="https://microed.com.br/microedcodeai" target="_blank" rel="noopener">microed.com.br/microedcodeai</a></p>
     </div>
   </footer>
+
+  <script>
+    (function () {
+      var STORAGE_KEY = "microedcodeai-lang";
+      var els = document.querySelectorAll("[data-pt][data-en]");
+      var btns = document.querySelectorAll(".lang-switch button");
+
+      function detectLang() {
+        var saved = localStorage.getItem(STORAGE_KEY);
+        if (saved === "pt" || saved === "en") return saved;
+        var nav = (navigator.language || "").toLowerCase();
+        if (nav === "pt" || nav === "pt-br" || nav.indexOf("pt") === 0) return "pt";
+        return "en";
+      }
+
+      function applyLang(lang) {
+        document.documentElement.lang = lang === "pt" ? "pt-BR" : "en";
+        els.forEach(function (el) {
+          var text = el.getAttribute("data-" + lang);
+          if (text !== null && text !== undefined) {
+            if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+              el.placeholder = text;
+            } else {
+              el.innerHTML = text;
+            }
+          }
+        });
+        // Update title
+        var titleEl = document.querySelector("title");
+        var titleText = titleEl.getAttribute("data-" + lang);
+        if (titleText) titleEl.textContent = titleText;
+        // Update lang-switch buttons
+        btns.forEach(function (b) {
+          b.classList.toggle("active", b.getAttribute("data-lang") === lang);
+        });
+      }
+
+      function setLang(lang) {
+        localStorage.setItem(STORAGE_KEY, lang);
+        applyLang(lang);
+      }
+
+      var current = detectLang();
+      applyLang(current);
+
+      btns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          setLang(btn.getAttribute("data-lang"));
+        });
+      });
+    })();
+  </script>
 
 </body>
 </html>

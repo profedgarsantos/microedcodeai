@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { ChatViewProvider } from "./chatViewProvider";
 import { ProviderType } from "./providers";
-import { uriHistorico } from "./agente";
+import { t, inicializarIdioma } from "./i18n";
 
 const TIPOS_PROVEDOR: ProviderType[] = [
   "openai",
@@ -12,6 +12,7 @@ const TIPOS_PROVEDOR: ProviderType[] = [
 ];
 
 export function activate(contexto: vscode.ExtensionContext): void {
+  inicializarIdioma(contexto);
   const provider = new ChatViewProvider(contexto, contexto.extensionUri);
 
   contexto.subscriptions.push(
@@ -33,40 +34,16 @@ export function activate(contexto: vscode.ExtensionContext): void {
       for (const tipo of TIPOS_PROVEDOR) {
         await contexto.secrets.delete(`microedcodeai.apiKey.${tipo}`);
       }
-      vscode.window.showInformationMessage(
-        "microedcode.ai: chaves de API salvas foram removidas."
-      );
+      vscode.window.showInformationMessage(t("keysCleared"));
     }),
-    vscode.commands.registerCommand("microedcodeai.about", async () => {
-      const opcao = await vscode.window.showInformationMessage(
-        "microedcode.ai — extensão criada por Microed Sistemas.",
-        "Visitar site (microed.com.br/microedcodeai)"
-      );
-      if (opcao) {
-        vscode.env.openExternal(
-          vscode.Uri.parse("https://microed.com.br/microedcodeai")
-        );
-      }
+    vscode.commands.registerCommand("microedcodeai.about", () => {
+      provider.mostrarAbout();
     }),
     vscode.commands.registerCommand("microedcodeai.gerarTesteUnitario", () => {
       provider.gerarTesteUnitario();
     }),
-    vscode.commands.registerCommand("microedcodeai.historico", async () => {
-      const uri = uriHistorico();
-      if (!uri) {
-        vscode.window.showWarningMessage(
-          "microedcode.ai: abra uma pasta de projeto para ver o histórico."
-        );
-        return;
-      }
-      try {
-        const doc = await vscode.workspace.openTextDocument(uri);
-        await vscode.window.showTextDocument(doc, { preview: false });
-      } catch {
-        vscode.window.showInformationMessage(
-          "microedcode.ai: ainda não há histórico salvo neste projeto."
-        );
-      }
+    vscode.commands.registerCommand("microedcodeai.historico", () => {
+      provider.mostrarHistorico();
     })
   );
 }

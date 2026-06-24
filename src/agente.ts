@@ -1,9 +1,10 @@
-// Núcleo do "modo agente" do microedcode.ai.
+// Núcleo do "modo agente" do Microed CodeAI.
 // Define o protocolo de ações (baseado em texto, compatível com qualquer
 // provedor), o parser dessas ações e o executor das ações de leitura/análise
 // sobre o workspace do VS Code.
 
 import * as vscode from "vscode";
+import { t } from "./i18n";
 
 export type TipoAcao =
   | "listar"
@@ -36,29 +37,29 @@ const LIMITE_RESULTADOS_BUSCA = 40;
 /** Instrução de sistema que ensina o modelo a agir como agente de código. */
 export function promptAgente(): string {
   return [
-    "Você é o microedcode.ai, um agente de programação dentro do VS Code. Responda sempre em português do Brasil.",
-    "Você pode analisar a lógica do projeto, criar e atualizar arquivos e corrigir bugs no código existente.",
+    t("agentYouAre"),
+    t("agentCapabilities"),
     "",
-    "Para interagir com o projeto, emita AÇÕES em blocos no formato exato:",
+    t("agentEmit"),
     "```forge:acao",
     '{"acao": "<nome>", ...parâmetros}',
     "```",
     "",
-    "Ações de LEITURA/ANÁLISE (eu executo e devolvo o resultado para você continuar):",
-    '- {"acao": "listar", "glob": "**/*.ts"}  → lista arquivos do projeto (glob opcional).',
-    '- {"acao": "ler", "caminho": "src/app.ts"}  → devolve o conteúdo do arquivo.',
-    '- {"acao": "buscar", "consulta": "minhaFuncao", "glob": "**/*.ts"}  → busca texto no projeto.',
-    '- {"acao": "diagnosticos", "caminho": "src/app.ts"}  → erros/avisos do editor (omita caminho para todos).',
+    t("agentReadActions"),
+    t("agentActionListar"),
+    t("agentActionLer"),
+    t("agentActionBuscar"),
+    t("agentActionDiagnosticos"),
     "",
-    "Ação de ESCRITA (cria/atualiza o arquivo; por padrão é aplicada automaticamente, salvo se o usuário tiver ativado a revisão manual):",
-    '- {"acao": "escrever", "caminho": "src/app.ts", "conteudo": "<conteúdo COMPLETO do arquivo>", "descricao": "o que muda e por quê"}',
+    t("agentActionEscrever"),
+    t("agentActionEscreverExample"),
     "",
-    "Regras importantes:",
-    "- Antes de propor mudanças, LEIA os arquivos relevantes para entender a lógica atual.",
-    "- Use um bloco de ação por vez quando precisar do resultado para decidir o próximo passo; pode emitir várias ações de leitura juntas.",
-    "- Em 'escrever', sempre forneça o conteúdo COMPLETO e final do arquivo (não trechos parciais nem '...').",
-    "- Explique seu raciocínio em texto normal antes das ações.",
-    "- Quando terminar e não precisar de mais nada, responda apenas com texto, sem blocos de ação.",
+    t("agentRules"),
+    t("agentRuleReadFirst"),
+    t("agentRuleOneAtTime"),
+    t("agentRuleComplete"),
+    t("agentRuleExplain"),
+    t("agentRuleFinish"),
   ].join("\n");
 }
 
@@ -118,7 +119,7 @@ export async function executarAcaoLeitura(acao: Acao): Promise<ResultadoAcao> {
         return {
           acao: acao.acao,
           ok: false,
-          saida: `Ação "${acao.acao}" não é de leitura.`,
+          saida: t("errorNotReadAction", acao.acao),
         };
     }
   } catch (e: any) {
@@ -126,7 +127,7 @@ export async function executarAcaoLeitura(acao: Acao): Promise<ResultadoAcao> {
       acao: acao.acao,
       caminho: acao.caminho,
       ok: false,
-      saida: `Falha ao executar a ação: ${e?.message ?? e}`,
+      saida: t("errorActionFailed", e?.message ?? String(e)),
     };
   }
 }
@@ -141,25 +142,29 @@ async function acaoListar(acao: Acao): Promise<ResultadoAcao> {
   const lista = uris.map((u) => caminhoRelativo(u)).sort();
   const saida =
     lista.length === 0
-      ? "Nenhum arquivo encontrado."
-      : lista.join("\n") + `\n\n(${lista.length} arquivo(s))`;
+      ? t("errorNoFilesFound")
+      : lista.join("\n") + `\n\n(${lista.length} ${IdiomaArquivos(lista.length)})`;
   return { acao: "listar", ok: true, saida };
+}
+
+function IdiomaArquivos(n: number): string {
+  return n === 1 ? "arquivo" : "arquivos";
 }
 
 async function acaoLer(acao: Acao): Promise<ResultadoAcao> {
   if (!acao.caminho) {
-    return { acao: "ler", ok: false, saida: "Parâmetro 'caminho' ausente." };
+    return { acao: "ler", ok: false, saida: t("errorMissingPath") };
   }
   const uri = uriDoCaminho(acao.caminho);
   if (!uri) {
-    return { acao: "ler", caminho: acao.caminho, ok: false, saida: "Nenhum workspace aberto." };
+    return { acao: "ler", caminho: acao.caminho, ok: false, saida: t("errorNoWorkspaceAgent") };
   }
   const dados = await vscode.workspace.fs.readFile(uri);
   let texto = Buffer.from(dados).toString("utf8");
   let aviso = "";
   if (texto.length > LIMITE_BYTES_ARQUIVO) {
     texto = texto.slice(0, LIMITE_BYTES_ARQUIVO);
-    aviso = "\n\n[...arquivo truncado...]";
+    aviso = t("errorTruncatedFile");
   }
   return {
     acao: "ler",
@@ -172,7 +177,7 @@ async function acaoLer(acao: Acao): Promise<ResultadoAcao> {
 async function acaoBuscar(acao: Acao): Promise<ResultadoAcao> {
   const consulta = (acao.consulta ?? "").trim();
   if (!consulta) {
-    return { acao: "buscar", ok: false, saida: "Parâmetro 'consulta' ausente." };
+    return { acao: "buscar", ok: false, saida: t("errorMissingQuery") };
   }
   const glob = acao.glob && acao.glob.trim() ? acao.glob : "**/*";
   const uris = await vscode.workspace.findFiles(
@@ -203,13 +208,13 @@ async function acaoBuscar(acao: Acao): Promise<ResultadoAcao> {
   }
   const saida =
     linhas.length === 0
-      ? `Nenhuma ocorrência de "${consulta}".`
+      ? t("errorNoOccurrences", consulta)
       : linhas.join("\n");
   return { acao: "buscar", ok: true, saida };
 }
 
 function acaoDiagnosticos(acao: Acao): ResultadoAcao {
-  const niveis = ["Erro", "Aviso", "Info", "Dica"];
+  const niveis = [t("diagError"), t("diagWarning"), t("diagInfo"), t("diagHint")];
   const formatar = (uri: vscode.Uri, ds: readonly vscode.Diagnostic[]) =>
     ds
       .map(
@@ -223,14 +228,14 @@ function acaoDiagnosticos(acao: Acao): ResultadoAcao {
   if (acao.caminho) {
     const uri = uriDoCaminho(acao.caminho);
     if (!uri) {
-      return { acao: "diagnosticos", ok: false, saida: "Nenhum workspace aberto." };
+      return { acao: "diagnosticos", ok: false, saida: t("errorNoWorkspaceAgent") };
     }
     const ds = vscode.languages.getDiagnostics(uri);
     return {
       acao: "diagnosticos",
       caminho: acao.caminho,
       ok: true,
-      saida: ds.length ? formatar(uri, ds) : "Nenhum diagnóstico para o arquivo.",
+      saida: ds.length ? formatar(uri, ds) : t("errorNoDiagnosticsFile"),
     };
   }
 
@@ -244,7 +249,7 @@ function acaoDiagnosticos(acao: Acao): ResultadoAcao {
   return {
     acao: "diagnosticos",
     ok: true,
-    saida: blocos.length ? blocos.join("\n") : "Nenhum diagnóstico no projeto.",
+    saida: blocos.length ? blocos.join("\n") : t("errorNoDiagnosticsProject"),
   };
 }
 
@@ -255,13 +260,11 @@ export async function aplicarEscrita(
 ): Promise<void> {
   const uri = uriDoCaminho(caminho);
   if (!uri) {
-    throw new Error("Nenhum workspace aberto para aplicar a alteração.");
+    throw new Error(t("errorNoWorkspace"));
   }
   const dados = Buffer.from(conteudo, "utf8");
   await vscode.workspace.fs.writeFile(uri, dados);
   const doc = await vscode.workspace.openTextDocument(uri);
-  // Abre o arquivo já com FOCO no editor (preserveFocus: false), para que o
-  // usuário veja imediatamente o arquivo que acabou de ser criado/atualizado.
   await vscode.window.showTextDocument(doc, {
     preview: false,
     preserveFocus: false,
@@ -296,7 +299,7 @@ export function contextoEditor(): string {
     `Arquivo ativo no editor: ${caminho} (${linguagem}).`,
   ];
   if (selecao && selecao.trim().length > 0) {
-    partes.push("Trecho selecionado pelo usuário:");
+    partes.push(t("unitTestSelectedSnippet"));
     partes.push("```");
     partes.push(selecao.slice(0, 8000));
     partes.push("```");
@@ -307,17 +310,22 @@ export function contextoEditor(): string {
 // ----------------------- Histórico de conversas -----------------------
 // O histórico é gravado DENTRO do projeto, em ".microedcodeai/historico.json",
 // ficando assim naturalmente separado por projeto.
+// Formato: array de conversas, cada uma com id, título, data e mensagens.
 
 const PASTA_HISTORICO = ".microedcodeai";
 const ARQUIVO_HISTORICO = "historico.json";
 
-export interface EntradaHistorico {
-  /** Data/hora em ISO 8601. */
+export interface MensagemHistorico {
   horario: string;
-  /** Quem produziu a mensagem. */
   papel: "usuario" | "assistente";
-  /** Texto da solicitação ou da resposta. */
   conteudo: string;
+}
+
+export interface ConversaHistorico {
+  id: string;
+  titulo: string;
+  data: string;
+  mensagens: MensagemHistorico[];
 }
 
 /** URI do arquivo de histórico dentro do projeto (ou undefined sem workspace). */
@@ -329,40 +337,104 @@ export function uriHistorico(): vscode.Uri | undefined {
   return vscode.Uri.joinPath(pastas[0].uri, PASTA_HISTORICO, ARQUIVO_HISTORICO);
 }
 
-/** Lê as entradas de histórico salvas no projeto (vazio se não existir). */
-export async function lerHistoricoSalvo(): Promise<EntradaHistorico[]> {
+/** Lê todas as conversas salvas no projeto. */
+export async function lerHistoricoSalvo(): Promise<ConversaHistorico[]> {
   const uri = uriHistorico();
-  if (!uri) {
-    return [];
-  }
+  if (!uri) return [];
   try {
     const dados = await vscode.workspace.fs.readFile(uri);
     const obj = JSON.parse(Buffer.from(dados).toString("utf8"));
-    return Array.isArray(obj) ? (obj as EntradaHistorico[]) : [];
+    if (Array.isArray(obj)) {
+      // Suporta formato antigo (EntradaHistorico[]) — converte para o novo
+      if (obj.length > 0 && !("mensagens" in (obj[0] || {}))) {
+        return converterFormatoAntigo(obj);
+      }
+      return obj as ConversaHistorico[];
+    }
+    return [];
   } catch {
     return [];
   }
 }
 
-/** Anexa uma entrada ao histórico do projeto, criando a pasta/arquivo se preciso. */
-export async function anexarHistorico(
-  papel: EntradaHistorico["papel"],
-  conteudo: string
-): Promise<void> {
-  const texto = conteudo.trim();
-  if (texto.length === 0) {
-    return;
-  }
+/** Converte o formato antigo (array plano) para o novo formato (conversas agrupadas). */
+function converterFormatoAntigo(entradas: any[]): ConversaHistorico[] {
+  if (entradas.length === 0) return [];
+  return [{
+    id: gerarIdConversa(),
+    titulo: entradas[0]?.conteudo?.substring(0, 60) || "Conversa antiga",
+    data: entradas[0]?.horario || new Date().toISOString(),
+    mensagens: entradas.map((e: any) => ({
+      horario: e.horario,
+      papel: e.papel,
+      conteudo: e.conteudo,
+    })),
+  }];
+}
+
+function gerarIdConversa(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+/** Salva o array completo de conversas em disco. */
+async function salvarHistorico(conversas: ConversaHistorico[]): Promise<void> {
   const uri = uriHistorico();
-  if (!uri) {
-    return; // sem workspace aberto: nada a gravar
-  }
-  const entradas = await lerHistoricoSalvo();
-  entradas.push({ horario: new Date().toISOString(), papel, conteudo: texto });
+  if (!uri) return;
   const pastas = vscode.workspace.workspaceFolders!;
   const pastaUri = vscode.Uri.joinPath(pastas[0].uri, PASTA_HISTORICO);
   await vscode.workspace.fs.createDirectory(pastaUri);
-  const json = JSON.stringify(entradas, null, 2);
+  const json = JSON.stringify(conversas, null, 2);
   await vscode.workspace.fs.writeFile(uri, Buffer.from(json, "utf8"));
 }
 
+/**
+ * Anexa uma mensagem à conversa atual (cria uma nova se id não existir).
+ * Retorna o id da conversa.
+ */
+export async function anexarMensagemHistorico(
+  idConversa: string | undefined,
+  papel: "usuario" | "assistente",
+  conteudo: string
+): Promise<string> {
+  const texto = conteudo.trim();
+  if (texto.length === 0) return idConversa || "";
+  const conversas = await lerHistoricoSalvo();
+  let conv: ConversaHistorico;
+
+  if (idConversa) {
+    conv = conversas.find(c => c.id === idConversa) || conversas[conversas.length - 1];
+    if (!conv) {
+      conv = { id: idConversa, titulo: texto.substring(0, 60), data: new Date().toISOString(), mensagens: [] };
+      conversas.push(conv);
+    }
+  } else {
+    // Nova conversa
+    const novoId = gerarIdConversa();
+    conv = { id: novoId, titulo: texto.substring(0, 60), data: new Date().toISOString(), mensagens: [] };
+    conversas.push(conv);
+  }
+
+  conv.mensagens.push({ horario: new Date().toISOString(), papel, conteudo: texto });
+  await salvarHistorico(conversas);
+  return conv.id;
+}
+
+/** Retorna a conversa mais recente (undefined se não houver). */
+export async function lerUltimaConversa(): Promise<ConversaHistorico | undefined> {
+  const conversas = await lerHistoricoSalvo();
+  return conversas[conversas.length - 1];
+}
+
+/** Retorna uma conversa específica pelo id. */
+export async function carregarConversa(id: string): Promise<ConversaHistorico | undefined> {
+  const conversas = await lerHistoricoSalvo();
+  return conversas.find(c => c.id === id);
+}
+
+/** Apaga todas as conversas. */
+export async function apagarHistorico(): Promise<void> {
+  const uri = uriHistorico();
+  if (uri) {
+    await salvarHistorico([]);
+  }
+}

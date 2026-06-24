@@ -8,15 +8,22 @@ import {
 } from "./providers";
 import {
   Acao,
-  anexarHistorico,
+  anexarMensagemHistorico,
   aplicarEscrita,
   contextoEditor,
   executarAcaoLeitura,
   extrairAcoes,
   lerConteudoAtual,
+  lerHistoricoSalvo,
+  lerUltimaConversa,
+  carregarConversa,
+  apagarHistorico,
   promptAgente,
   removerBlocosAcao,
+  ConversaHistorico,
 } from "./agente";
+import { t, traducoesWebview, idiomaAtivo, definirIdioma, Idioma } from "./i18n";
+import { cacheCompleto, atualizarModelosProvider } from "./modelos";
 
 interface ConfiguracaoAtual {
   providerType: ProviderType;
@@ -38,10 +45,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
   private view?: vscode.WebviewView;
   private historico: ChatMessage[] = [];
+  private idConversaAtual: string | undefined;
   private controladorAtual?: AbortController;
-  // Propostas de escrita aguardando decisão do usuário (id -> ação).
   private propostas = new Map<string, Acao>();
-  // Conteúdo anterior de cada proposta, para o "Ver diff" funcionar mesmo após aplicar.
   private anteriores = new Map<string, string>();
   private contadorProposta = 0;
 
@@ -63,21 +69,49 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage((msg) => this.tratarMensagem(msg));
   }
 
-  /** Abre o painel e foca o campo de configuração. */
   public abrirConfiguracoes(): void {
     this.view?.show?.(true);
     this.view?.webview.postMessage({ tipo: "abrirConfiguracoes" });
   }
 
-  /** Inicia uma nova conversa, limpando o histórico. */
   public novaConversa(): void {
     this.historico = [];
+    this.idConversaAtual = undefined;
     this.propostas.clear();
     this.anteriores.clear();
     this.view?.webview.postMessage({ tipo: "limparTela" });
   }
 
-  // ----------------------- Tratamento de mensagens -----------------------
+  /** Exibe o painel About com informações da extensão. */
+  public mostrarAbout(): void {
+    this.view?.show?.(true);
+    let versao = "?";
+    try {
+      // No VSIX instalado: out/chatViewProvider.js → ../package.json
+      // No dev (tsc):        out/chatViewProvider.js → ../package.json
+      versao = require("../package.json").version || "?";
+    } catch { /* ignora */ }
+    this.view?.webview.postMessage({
+      tipo: "mostrarAbout",
+      versao,
+    });
+  }
+
+  /** Exibe o painel de histórico no chat. */
+  public async mostrarHistorico(): Promise<void> {
+    this.view?.show?.(true);
+    const conversas = await lerHistoricoSalvo();
+    const resumo = conversas.map(c => ({
+      id: c.id,
+      titulo: c.titulo,
+      data: c.data,
+      resumo: c.mensagens.length > 0 ? c.mensagens[0].conteudo.substring(0, 120) : "",
+    }));
+    this.view?.webview.postMessage({
+      tipo: "historicoCarregado",
+      conversas: resumo,
+    });
+  }
 
   private async tratarMensagem(msg: any): Promise<void> {
     switch (msg?.tipo) {
@@ -116,10 +150,84 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       case "limpar":
         this.novaConversa();
         break;
+      case "alterarIdioma": {
+        const novoIdioma = String(msg.idioma ?? "pt") as Idioma;
+        definirIdioma(novoIdioma, this.contexto);
+        this.view?.webview.postMessage({
+          tipo: "idiomaAlterado",
+          idioma: novoIdioma,
+          i18n: traducoesWebview(),
+        });
+        break;
+      }
+      case "atualizarModelos": {
+        const cfg = await this.lerConfig();
+        const chave = await this.contexto.secrets.get(this.chaveSecreta(cfg.providerType));
+        const resultado = await atualizarModelosProvider(
+          this.uriExtensao,
+          cfg.providerType,
+          chave ?? undefined,
+          cfg.baseUrl
+        );
+        this.view?.webview.postMessage({
+          tipo: "modelosAtualizados",
+          modelos: resultado.modelos,
+          status: resultado.status,
+        });
+        // Feedback visual na barra de status
+        const msgStatus = resultado.status === "ok"
+          ? t("modelsUpdateOk")
+          : t("modelsUpdateFailed");
+        this.view?.webview.postMessage({ tipo: "info", texto: msgStatus });
+        break;
+      }
+      case "carregarHistorico": {
+        const conversas = await lerHistoricoSalvo();
+        // Envia lista de conversas (resumo) para o webview
+        const resumo = conversas.map(c => ({
+          id: c.id,
+          titulo: c.titulo,
+          data: c.data,
+          resumo: c.mensagens.length > 0 ? c.mensagens[0].conteudo.substring(0, 120) : "",
+        }));
+        this.view?.webview.postMessage({
+          tipo: "historicoCarregado",
+          conversas: resumo,
+        });
+        break;
+      }
+      case "carregarConversaPorId": {
+        const conv = await carregarConversa(String(msg.id ?? ""));
+        if (conv) {
+          this.idConversaAtual = conv.id;
+          this.historico = conv.mensagens.map(m => ({
+            role: m.papel === "usuario" ? "user" : "assistant",
+            content: m.conteudo,
+          }));
+          this.view?.webview.postMessage({
+            tipo: "carregarConversa",
+            mensagens: this.historico.map(m => ({
+              role: m.role,
+              content: m.content,
+              horario: "",
+            })),
+          });
+        }
+        break;
+      }
+      case "apagarHistorico": {
+        await apagarHistorico();
+        this.historico = [];
+        this.idConversaAtual = undefined;
+        this.view?.webview.postMessage({ tipo: "historicoCarregado", conversas: [] });
+        break;
+      }
+      case "carregarAbout": {
+        this.mostrarAbout();
+        break;
+      }
     }
   }
-
-  // ----------------------- Propostas de escrita -----------------------
 
   private async aplicarProposta(id: string): Promise<void> {
     const acao = this.propostas.get(id);
@@ -137,12 +245,12 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       });
       this.historico.push({
         role: "user",
-        content: `[O usuário APLICOU a alteração no arquivo ${acao.caminho}.]`,
+        content: t("historyUserApplied", acao.caminho),
       });
     } catch (e: any) {
       this.view?.webview.postMessage({
         tipo: "erro",
-        texto: `Falha ao aplicar a alteração em ${acao.caminho}: ${e?.message ?? e}`,
+        texto: t("errorApply", acao.caminho, e?.message ?? String(e)),
       });
     }
   }
@@ -152,8 +260,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     if (!acao || !acao.caminho) {
       return;
     }
-    // Usa o conteúdo anterior salvo (útil quando a alteração já foi aplicada);
-    // se não houver, lê o conteúdo atual do arquivo.
     const anterior = this.anteriores.has(id)
       ? this.anteriores.get(id)!
       : await lerConteudoAtual(acao.caminho);
@@ -169,7 +275,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       "vscode.diff",
       docAtual.uri,
       docNovo.uri,
-      `microedcode.ai · ${acao.caminho} (antes ↔ depois)`
+      t("wvDiffTitle", acao.caminho),
     );
   }
 
@@ -186,7 +292,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       model: cfg.get<string>("model", "gpt-5.4-mini"),
       baseUrl: cfg.get<string>("baseUrl", ""),
       temperature: cfg.get<number>("temperature", 0.7),
-      systemPrompt: cfg.get<string>("systemPrompt", ""),
+      systemPrompt: cfg.get<string>("systemPrompt", "") || t("defaultSystemPrompt"),
       modoAgente: cfg.get<boolean>("modoAgente", true),
       aplicarAutomaticamente: cfg.get<boolean>("aplicarAutomaticamente", true),
       chaveDefinida: !!chave,
@@ -195,13 +301,65 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
   private async enviarConfig(): Promise<void> {
     const config = await this.lerConfig();
+    const modelos = await cacheCompleto(this.uriExtensao);
     this.view?.webview.postMessage({
       tipo: "config",
       dados: {
         ...config,
         baseUrlPadrao: urlBasePadrao(config.providerType),
+        modelos,
+        i18n: traducoesWebview(),
+        idioma: idiomaAtivo(),
       },
     });
+    // Carrega a última conversa automaticamente (se houver)
+    this.carregarUltimaConversa();
+    // Em background: tenta buscar do JSON público para atualizar a lista
+    this.atualizarModelosEmBackground(config.providerType);
+  }
+
+  /** Carrega a última conversa salva e a exibe no chat. */
+  private async carregarUltimaConversa(): Promise<void> {
+    const ultima = await lerUltimaConversa();
+    if (ultima && ultima.mensagens.length > 0) {
+      this.idConversaAtual = ultima.id;
+      this.historico = ultima.mensagens.map(m => ({
+        role: m.papel === "usuario" ? "user" : "assistant",
+        content: m.conteudo,
+      }));
+      // Envia as mensagens para o webview
+      this.view?.webview.postMessage({
+        tipo: "carregarConversa",
+        mensagens: this.historico.map(m => ({
+          role: m.role,
+          content: m.content,
+          horario: "",
+        })),
+      });
+    }
+  }
+
+  /** Dispara a atualização de modelos em background (sem bloquear a UI). */
+  private async atualizarModelosEmBackground(tipo: ProviderType): Promise<void> {
+    try {
+      console.log(`[microedcodeai] Iniciando atualização de modelos em background para ${tipo}`);
+      const chave = await this.contexto.secrets.get(this.chaveSecreta(tipo));
+      const resultado = await atualizarModelosProvider(
+        this.uriExtensao,
+        tipo,
+        chave ?? undefined,
+        ""  // usa URL padrão do provedor
+      );
+      console.log(`[microedcodeai] Resultado da atualização: status=${resultado.status}, provedores=${Object.keys(resultado.modelos).length}`);
+      if (resultado.status === "ok") {
+        this.view?.webview.postMessage({
+          tipo: "modelosAtualizados",
+          modelos: resultado.modelos,
+        });
+      }
+    } catch (e: any) {
+      console.error(`[microedcodeai] Erro em atualizarModelosEmBackground: ${e?.message || e}`);
+    }
   }
 
   private async salvarConfig(dados: any): Promise<void> {
@@ -233,7 +391,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     await this.enviarConfig();
     this.view?.webview.postMessage({
       tipo: "info",
-      texto: "Configuração salva com sucesso.",
+      texto: t("configSaved"),
     });
   }
 
@@ -249,31 +407,23 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       return;
     }
 
-    // Registra a solicitação do usuário no histórico do projeto.
-    await anexarHistorico("usuario", conteudo);
+    this.idConversaAtual = await anexarMensagemHistorico(this.idConversaAtual, "usuario", conteudo);
 
-    // No modo agente, anexa o contexto do editor (arquivo ativo + seleção).
     let entrada = conteudo;
     if (config.modoAgente) {
       const ctx = contextoEditor();
       if (ctx) {
-        entrada = `${conteudo}\n\n[Contexto do editor]\n${ctx}`;
+        entrada = `${conteudo}\n\n${t("backendContextEditor")}\n${ctx}`;
       }
     }
 
     await this.rodarPipeline(config, apiKey, entrada);
   }
 
-  /**
-   * Gera (ou atualiza) testes unitários para o arquivo ativo no editor,
-   * usando o trecho selecionado quando houver. Acionado pelo menu de contexto.
-   */
   public async gerarTesteUnitario(): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
-      vscode.window.showWarningMessage(
-        "microedcode.ai: abra um arquivo de código para gerar testes unitários."
-      );
+      vscode.window.showWarningMessage(t("unitTestNoFile"));
       return;
     }
 
@@ -282,27 +432,28 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     const selecao = editor.document.getText(editor.selection);
     const temSelecao = selecao.trim().length > 0;
     const alvo = temSelecao
-      ? `o trecho de código selecionado em ${caminho}`
-      : `o arquivo ${caminho}`;
+      ? t("unitTestTaskSelected", caminho)
+      : t("unitTestTaskFile", caminho);
 
     await this.garantirView();
 
-    const exibicao = `Criar ou atualizar teste unitário para ${alvo}.`;
+    const exibicao = t("unitTestUserMessage", alvo);
     this.view?.webview.postMessage({ tipo: "mensagemUsuario", texto: exibicao });
-    await anexarHistorico("usuario", exibicao);
+    this.idConversaAtual = await anexarMensagemHistorico(this.idConversaAtual, "usuario", exibicao);
+
 
     const partes: string[] = [
-      `Tarefa: criar ou atualizar os testes unitários para ${alvo} (linguagem: ${linguagem}).`,
+      t("unitTestPromptTask", alvo, linguagem),
       "",
-      "Diretrizes:",
-      "- Leia o arquivo alvo e, se necessário, arquivos relacionados para entender a lógica.",
-      "- Detecte o framework de testes já usado no projeto (ex.: Jasmine/Karma, Jest, Vitest, Mocha, pytest, JUnit, etc.). Se não houver, escolha o mais adequado à linguagem/stack.",
-      "- Se já existir um arquivo de teste para o alvo, ATUALIZE-o cobrindo os casos novos; caso contrário, CRIE um novo arquivo de teste seguindo a convenção de nomes do projeto.",
-      "- Cubra casos de sucesso, de borda e de erro.",
-      "- Escreva os testes e comentários em português do Brasil.",
+      t("unitTestGuidelines"),
+      t("unitTestGuideRead"),
+      t("unitTestGuideDetect"),
+      t("unitTestGuideUpdate"),
+      t("unitTestGuideCoverage"),
+      t("unitTestGuideLanguage"),
     ];
     if (temSelecao) {
-      partes.push("", "Trecho selecionado:", "```", selecao.slice(0, 8000), "```");
+      partes.push("", t("unitTestSelectedSnippet"), "```", selecao.slice(0, 8000), "```");
     }
 
     const config = await this.lerConfig();
@@ -313,10 +464,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     await this.rodarPipeline(config, apiKey, partes.join("\n"));
   }
 
-  /**
-   * Valida pré-requisitos (chave/modelo) e devolve a chave de API.
-   * Retorna null (e notifica o usuário) se algo estiver faltando.
-   */
   private async validarEObterChave(
     config: ConfiguracaoAtual
   ): Promise<string | undefined | null> {
@@ -326,22 +473,20 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     if (exigeChave(config.providerType) && !apiKey) {
       this.view?.webview.postMessage({
         tipo: "erro",
-        texto:
-          "Nenhuma chave de API configurada para este provedor. Abra as configurações (ícone de engrenagem) e informe a chave.",
+        texto: t("errorNoApiKey"),
       });
       return null;
     }
     if (!config.model || config.model.trim().length === 0) {
       this.view?.webview.postMessage({
         tipo: "erro",
-        texto: "Nenhum modelo definido. Configure o modelo antes de conversar.",
+        texto: t("errorNoModel"),
       });
       return null;
     }
     return apiKey ?? undefined;
   }
 
-  /** Empurra a entrada no histórico e roda o loop do agente. */
   private async rodarPipeline(
     config: ConfiguracaoAtual,
     apiKey: string | undefined,
@@ -356,11 +501,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  /** Garante que o painel de chat esteja visível e com o webview pronto. */
   private async garantirView(): Promise<void> {
     if (!this.view) {
       await vscode.commands.executeCommand("microedcodeai.chatView.focus");
-      // Aguarda a resolução do webview (até ~3s).
       for (let i = 0; i < 30 && !this.view; i++) {
         await new Promise((r) => setTimeout(r, 100));
       }
@@ -369,10 +512,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  /**
-   * Loop principal: conversa com o modelo e, no modo agente, executa as ações
-   * de leitura solicitadas, realimentando o modelo até ele concluir.
-   */
   private async executarConversa(
     config: ConfiguracaoAtual,
     apiKey: string | undefined
@@ -389,12 +528,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
       const resposta = await this.streamarResposta(config, apiKey, mensagens);
       if (resposta === undefined) {
-        return; // interrompido ou erro (já notificado ao webview)
+        return;
       }
       this.historico.push({ role: "assistant", content: resposta });
-      // Registra a parte legível da resposta no histórico do projeto
-      // (turnos só com blocos de ação ficam vazios e são ignorados).
-      await anexarHistorico("assistente", removerBlocosAcao(resposta));
+      await anexarMensagemHistorico(this.idConversaAtual, "assistente", removerBlocosAcao(resposta));
 
       if (!config.modoAgente) {
         return;
@@ -402,7 +539,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
       const acoes = extrairAcoes(resposta);
       if (acoes.length === 0) {
-        return; // o modelo concluiu
+        return;
       }
 
       const escritas = acoes.filter((a) => a.acao === "escrever");
@@ -412,13 +549,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         await this.registrarProposta(escrita, config.aplicarAutomaticamente);
       }
 
-      // Sem ações de leitura: encerra o turno. As alterações já foram aplicadas
-      // automaticamente ou estão como propostas aguardando o usuário.
       if (leituras.length === 0) {
         return;
       }
 
-      // Executa as leituras e realimenta o modelo.
       const partes: string[] = [];
       for (const leitura of leituras) {
         this.view?.webview.postMessage({
@@ -428,36 +562,35 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const r = await executarAcaoLeitura(leitura);
         const cabecalho = r.caminho ? `${r.acao} (${r.caminho})` : r.acao;
         partes.push(
-          `### Resultado de ${cabecalho}\n${r.ok ? "" : "[ERRO] "}${r.saida}`
+          t("backendResult", cabecalho) + "\n" + (r.ok ? "" : "[ERRO] ") + r.saida
         );
       }
       this.historico.push({
         role: "user",
-        content:
-          "Resultados das ações solicitadas:\n\n" +
-          partes.join("\n\n") +
-          "\n\nContinue a tarefa com base nesses resultados.",
+        content: t("backendContinue", partes.join("\n\n")),
       });
     }
 
     this.view?.webview.postMessage({
       tipo: "info",
-      texto: "Limite de passos do agente atingido.",
+      texto: t("agentMaxSteps"),
     });
   }
 
   private rotuloAcao(acao: Acao): string {
     switch (acao.acao) {
       case "listar":
-        return `Listando arquivos${acao.glob ? " (" + acao.glob + ")" : ""}…`;
+        return t("agentListing") + (acao.glob ? " (" + acao.glob + ")" : "") + "\u2026";
       case "ler":
-        return `Lendo ${acao.caminho}…`;
+        return t("agentReading", acao.caminho ?? "") + "\u2026";
       case "buscar":
-        return `Buscando "${acao.consulta}"…`;
+        return t("agentSearching", acao.consulta ?? "") + "\u2026";
       case "diagnosticos":
-        return `Analisando diagnósticos${acao.caminho ? " de " + acao.caminho : ""}…`;
+        return acao.caminho
+          ? t("agentDiagnosticsOf", acao.caminho) + "\u2026"
+          : t("agentDiagnostics") + "\u2026";
       default:
-        return `Executando ${acao.acao}…`;
+        return t("agentExecuting", acao.acao) + "\u2026";
     }
   }
 
@@ -475,7 +608,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     const novo = atual.length === 0;
 
     if (aplicarAuto) {
-      // Modo padrão: aplica a alteração imediatamente no arquivo.
       try {
         await aplicarEscrita(acao.caminho, acao.conteudo);
         this.propostas.delete(id);
@@ -489,20 +621,19 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         });
         this.historico.push({
           role: "user",
-          content: `[O arquivo ${acao.caminho} foi ${
-            novo ? "criado" : "atualizado"
-          } automaticamente com o conteúdo proposto.]`,
+          content: novo
+            ? t("historyFileCreated", acao.caminho)
+            : t("historyFileUpdated", acao.caminho),
         });
       } catch (e: any) {
         this.view?.webview.postMessage({
           tipo: "erro",
-          texto: `Falha ao aplicar a alteração em ${acao.caminho}: ${e?.message ?? e}`,
+          texto: t("errorApply", acao.caminho, e?.message ?? String(e)),
         });
       }
       return;
     }
 
-    // Modo aprovação manual: vira uma proposta com botões Aplicar/Ver diff/Rejeitar.
     this.view?.webview.postMessage({
       tipo: "proposta",
       id,
@@ -513,7 +644,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  /** Faz uma única rodada de streaming, atualizando a UI. Retorna o texto, ou undefined se interrompido/erro. */
   private async streamarResposta(
     config: ConfiguracaoAtual,
     apiKey: string | undefined,
@@ -549,7 +679,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         }
         this.view?.webview.postMessage({
           tipo: "erro",
-          texto: erro?.message ?? "Erro desconhecido ao consultar a IA.",
+          texto: erro?.message ?? t("errorIaUnknown"),
         });
       }
       return undefined;
@@ -569,89 +699,138 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this.uriExtensao, "media", "logof.png")
     );
     const nonce = gerarNonce();
+    const lang = idiomaAtivo() === "pt" ? "pt-BR" : "en";
 
     return /* html */ `<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https: data:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; font-src ${webview.cspSource};" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="${uriEstilo}" rel="stylesheet" />
-  <title>microedcode.ai</title>
+  <title data-i18n="appTitleWebview">${t("appTitleWebview")}</title>
 </head>
 <body>
   <div id="painel-config" class="painel-config oculto">
-    <h2>Configuração do provedor</h2>
+    <h2 data-i18n="configTitle">${t("configTitle")}</h2>
 
-    <label for="cfg-provider">Provedor de IA</label>
-    <select id="cfg-provider">
-      <option value="openai">OpenAI</option>
-      <option value="anthropic">Anthropic (Claude)</option>
-      <option value="deepseek">DeepSeek</option>
-      <option value="ollama">Ollama (local)</option>
-      <option value="openai-compativel">Compatível com OpenAI</option>
+    <label for="sel-idioma" data-i18n="configLanguage">${t("configLanguage")}</label>
+    <select id="sel-idioma" class="sel-idioma-config">
+      <option value="pt">Português</option>
+      <option value="en">English</option>
     </select>
 
-    <label for="cfg-modelo-select">Modelo</label>
-    <select id="cfg-modelo-select"></select>
-    <input id="cfg-modelo" class="oculto" placeholder="digite o nome do modelo" />
+    <label for="cfg-provider" data-i18n="configProvider">${t("configProvider")}</label>
+    <select id="cfg-provider">
+      <option value="openai" data-i18n="providerOpenai">${t("providerOpenai")}</option>
+      <option value="anthropic" data-i18n="providerAnthropic">${t("providerAnthropic")}</option>
+      <option value="deepseek" data-i18n="providerDeepseek">${t("providerDeepseek")}</option>
+      <option value="ollama" data-i18n="providerOllama">${t("providerOllama")}</option>
+      <option value="openai-compativel" data-i18n="providerCompativel">${t("providerCompativel")}</option>
+    </select>
 
-    <label for="cfg-baseurl">URL base <span class="dica">(opcional)</span></label>
-    <input id="cfg-baseurl" placeholder="usar padrão do provedor" />
+    <label for="cfg-modelo-select" data-i18n="configModel">${t("configModel")}</label>
+    <div class="modelo-linha">
+      <select id="cfg-modelo-select"></select>
+      <button id="btn-atualizar-modelos" class="btn-atualizar-modelos" title="${t("refreshModelsTooltip")}" data-i18n-title="refreshModelsTooltip" data-i18n="refreshModels">${t("refreshModels")}</button>
+    </div>
 
-    <label for="cfg-apikey">Chave de API</label>
-    <input id="cfg-apikey" type="password" placeholder="cole sua chave aqui" />
+    <label for="cfg-baseurl"><span data-i18n="configBaseUrl">${t("configBaseUrl")}</span> <span class="dica" data-i18n="configBaseUrlOptional">${t("configBaseUrlOptional")}</span></label>
+    <input id="cfg-baseurl" placeholder="${t("configBaseUrlPlaceholder")}" data-i18n-placeholder="configBaseUrlPlaceholder" />
+
+    <label for="cfg-apikey" data-i18n="configApiKey">${t("configApiKey")}</label>
+    <input id="cfg-apikey" type="password" placeholder="${t("configApiKeyPlaceholder")}" data-i18n-placeholder="configApiKeyPlaceholder" />
     <span id="cfg-status-chave" class="dica"></span>
-    <a id="cfg-link-chave" class="link-chave oculto" href="#">Obter chave de API</a>
+    <a id="cfg-link-chave" class="link-chave oculto" href="#" data-i18n="configGetApiKey">${t("configGetApiKey")}</a>
 
-    <label for="cfg-temp">Temperatura: <span id="cfg-temp-valor">0.7</span></label>
+    <label for="cfg-temp"><span data-i18n="configTemperature">${t("configTemperature")}</span>: <span id="cfg-temp-valor">0.7</span></label>
     <input id="cfg-temp" type="range" min="0" max="2" step="0.1" value="0.7" />
 
-    <label for="cfg-system">Instrução de sistema</label>
+    <label for="cfg-system" data-i18n="configSystemPrompt">${t("configSystemPrompt")}</label>
     <textarea id="cfg-system" rows="3"></textarea>
 
-    <label class="check-config" title="Quando ativado, a IA altera os arquivos imediatamente. Desative para revisar e aprovar cada mudança antes de aplicar.">
+    <label class="check-config" title="${t("configApplyAutoTooltip")}" data-i18n-title="configApplyAutoTooltip">
       <input id="cfg-aplicar-auto" type="checkbox" />
-      <span>Aplicar alterações automaticamente nos arquivos</span>
+      <span data-i18n="configApplyAuto">${t("configApplyAuto")}</span>
     </label>
 
     <div class="acoes-config">
-      <button id="btn-salvar" class="primario">Salvar</button>
-      <button id="btn-cancelar" class="secundario">Cancelar</button>
+      <button id="btn-salvar" class="primario" data-i18n="configSave">${t("configSave")}</button>
+      <button id="btn-cancelar" class="secundario" data-i18n="configCancel">${t("configCancel")}</button>
     </div>
 
     <div class="sobre">
-      <span>Sobre: extensão criada por <strong>Microed Sistemas</strong></span>
+      <span data-i18n="aboutText">${t("aboutText")}</span>
       <a id="cfg-link-sobre" class="link-chave" href="#" data-url="https://microed.com.br/microedcodeai">https://microed.com.br/microedcodeai</a>
     </div>
   </div>
 
   <div id="painel-chat" class="painel-chat">
-    <a id="propaganda" class="propaganda" href="#" data-url="https://microed.com.br/microedcodeai" title="Conheça o microedcode.ai">
-      <img class="propaganda-logo" src="${uriLogo}" alt="microedcode.ai" />
-      <span class="propaganda-texto"><strong>microedcode.ai</strong> · soluções em IA por Microed Sistemas</span>
-      <span class="propaganda-cta">Saiba mais &rarr;</span>
+    <a id="propaganda" class="propaganda" href="#" data-url="https://microed.com.br/microedcodeai" title="${t("promoTitle")}" data-i18n-title="promoTitle">
+      <img class="propaganda-logo" src="${uriLogo}" alt="Microed CodeAI" />
+      <span class="propaganda-texto" data-i18n="promoText">${t("promoText")}</span>
+      <span class="propaganda-cta" data-i18n="promoCta">${t("promoCta")}</span>
     </a>
+
+    <!-- Painel de histórico -->
+    <div id="painel-historico" class="painel-historico oculto">
+      <div class="historico-cabecalho">
+        <span class="historico-titulo" data-i18n="historyTitle">${t("historyTitle")}</span>
+        <button id="btn-fechar-historico" class="btn-fechar-historico" data-i18n="historyBack">${t("historyBack")}</button>
+      </div>
+      <div id="lista-historico" class="lista-historico"></div>
+      <div class="historico-rodape">
+        <button id="btn-apagar-historico" class="btn-apagar-historico" data-i18n="historyDelete">${t("historyDelete")}</button>
+      </div>
+    </div>
+
+    <!-- Painel About -->
+    <div id="painel-about" class="painel-about oculto">
+      <div class="historico-cabecalho">
+        <span class="historico-titulo" data-i18n="aboutTitle">${t("aboutTitle")}</span>
+        <button id="btn-fechar-about" class="btn-fechar-historico" data-i18n="aboutBack">${t("aboutBack")}</button>
+      </div>
+      <div class="about-conteudo">
+        <div class="about-logo"><img src="${uriLogo}" alt="Microed CodeAI" width="64" height="64" /></div>
+        <p class="about-desc" data-i18n="aboutDescription">${t("aboutDescription")}</p>
+        <div class="about-info">
+          <span class="about-label" data-i18n="aboutVersion">${t("aboutVersion")}</span>: <strong id="about-versao">—</strong>
+        </div>
+        <div class="about-info">
+          <span class="about-label" data-i18n="aboutPublisher">${t("aboutPublisher")}</span>: <strong>Microed Sistemas</strong>
+        </div>
+        <div class="about-links">
+          <span class="about-label" data-i18n="aboutLinks">${t("aboutLinks")}</span>:
+          <a href="#" data-url="https://microed.com.br/microedcodeai">microed.com.br/microedcodeai</a>
+          <a href="#" data-url="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai">VS Code Marketplace</a>
+        </div>
+      </div>
+    </div>
+
     <div id="mensagens" class="mensagens">
       <div class="boas-vindas">
-        <h3>Bem-vindo ao microedcode.ai</h3>
-        <p>Converse com a IA diretamente no VS Code. Com o <strong>Modo Agente</strong> ativado, a IA pode analisar a lógica do projeto, ler arquivos, propor a criação/atualização de código e ajudar a corrigir bugs.</p>
-        <p>Clique na engrenagem para escolher o provedor, o modelo e informar sua chave de API.</p>
+        <h3 data-i18n="chatWelcomeTitle">${t("chatWelcomeTitle")}</h3>
+        <p data-i18n="chatWelcomeText1">${t("chatWelcomeText1")}</p>
+        <p data-i18n="chatWelcomeText2">${t("chatWelcomeText2")}</p>
       </div>
     </div>
 
     <div class="barra-status">
       <span id="status-modelo" class="status-modelo"></span>
-      <label class="toggle-agente" title="No modo agente, a IA lê arquivos e propõe alterações no código">
-        <input id="chk-agente" type="checkbox" />
-        <span>Modo Agente</span>
-      </label>
+      <div class="barra-status-direita">
+        <button id="btn-historico" class="btn-status" title="${t("historyToggleTooltip")}" data-i18n-title="historyToggleTooltip">📋</button>
+        <button id="btn-about" class="btn-status" title="Sobre / About">ℹ</button>
+        <label class="toggle-agente" title="${t("chatAgentTooltip")}" data-i18n-title="chatAgentTooltip">
+          <input id="chk-agente" type="checkbox" />
+          <span data-i18n="chatAgentToggle">${t("chatAgentToggle")}</span>
+        </label>
+      </div>
     </div>
 
     <div class="area-entrada">
-      <textarea id="entrada" rows="1" placeholder="Pergunte algo... (Enter para enviar, Shift+Enter para nova linha)"></textarea>
-      <button id="btn-enviar" class="primario" title="Enviar">Enviar</button>
-      <button id="btn-parar" class="secundario oculto" title="Parar geração">Parar</button>
+      <textarea id="entrada" rows="1" placeholder="${t("chatPlaceholder")}" data-i18n-placeholder="chatPlaceholder"></textarea>
+      <button id="btn-enviar" class="primario" title="${t("chatSend")}" data-i18n-title="chatSend" data-i18n="chatSend">${t("chatSend")}</button>
+      <button id="btn-parar" class="secundario oculto" title="${t("chatStop")}" data-i18n-title="chatStop" data-i18n="chatStop">${t("chatStop")}</button>
     </div>
   </div>
 

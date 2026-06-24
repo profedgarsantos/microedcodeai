@@ -153,7 +153,7 @@
         "microedcodeai.systemPrompt": {
           "type": "string",
           "editPresentation": "multilineText",
-          "default": "Você é um assistente de programação prestativo. Responda sempre em português do Brasil.",
+          "default": "",
           "description": "Instrução de sistema enviada ao modelo no início de cada conversa."
         },
         "microedcodeai.temperature": {
@@ -172,6 +172,17 @@
           "type": "boolean",
           "default": true,
           "description": "Aplicar alterações automaticamente: quando ativado (padrão), a IA altera os arquivos imediatamente no VS Code. Desative para revisar e aprovar cada mudança antes de aplicar."
+        },
+        "microedcodeai.idioma": {
+          "type": "string",
+          "enum": ["auto", "pt", "en"],
+          "enumDescriptions": [
+            "Detectar automaticamente (português se VS Code estiver em português, inglês caso contrário)",
+            "Português do Brasil",
+            "Inglês"
+          ],
+          "default": "auto",
+          "description": "Idioma da interface da extensão. Por padrão, acompanha o idioma do VS Code."
         }
       }
     }
