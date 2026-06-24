@@ -206,6 +206,7 @@
       </a>
       <nav class="nav-links">
         <a href="#recursos"    data-pt="Recursos" data-en="Features">Recursos</a>
+        <a href="#screenshots" data-pt="Screenshots" data-en="Screenshots">Screenshots</a>
         <a href="#idiomas"     data-pt="Idiomas" data-en="Languages">Idiomas</a>
         <a href="#agente"      data-pt="Modo Agente" data-en="Agent Mode">Modo Agente</a>
         <a href="#historico"   data-pt="Histórico" data-en="History">Histórico</a>
@@ -239,7 +240,7 @@
       <div class="hero-actions">
         <a class="btn btn-primary" href="https://marketplace.visualstudio.com/items?itemName=microedsistemas.microedcode-ai" target="_blank" rel="noopener"
           data-pt="⬇ Instalar pelo VS Code Marketplace" data-en="⬇ Install from VS Code Marketplace">⬇ Instalar pelo VS Code Marketplace</a>
-        <a class="btn btn-ghost" href="#instalar" data-pt="Como instalar" data-en="How to install">Como instalar</a>
+        <a class="btn btn-ghost" href="#screenshots" data-pt="Ver screenshots" data-en="View screenshots">Ver screenshots</a>
       </div>
       <p class="hero-note" data-pt="Grátis · disponível no VS Code Marketplace · suas chaves de API ficam seguras no seu computador"
                           data-en="Free · available on the VS Code Marketplace · your API keys stay secure on your computer">Grátis · disponível no VS Code Marketplace · suas chaves de API ficam seguras no seu computador</p>
@@ -291,6 +292,71 @@
           <p data-pt="As chaves de API ficam guardadas com segurança no SecretStorage do VS Code, no seu próprio computador."
              data-en="API keys are securely stored in VS Code's SecretStorage, on your own computer.">As chaves de API ficam guardadas com segurança no SecretStorage do VS Code, no seu próprio computador.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCREENSHOTS SECTION
+       Replace each .screen-placeholder with an actual <img> tag.
+       Image folder: https://microed.com.br/microedcodeai/screenshots/
+       Suggested names and descriptions are in the comments.
+       ============================================================ -->
+  <style>
+    .screenshots { padding: 60px 0; }
+    .screen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 28px; margin-top: 32px; }
+    .screen-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .screen-card img { width: 100%; display: block; }
+    .screen-placeholder {
+      aspect-ratio: 16/10; background: linear-gradient(135deg, rgba(91,140,255,0.06), rgba(124,92,255,0.06));
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 0.88em; text-align: center; padding: 20px;
+    }
+    .screen-placeholder .ph-icon { font-size: 2.4rem; margin-bottom: 10px; opacity: 0.5; }
+    .screen-placeholder .ph-label { font-weight: 600; color: var(--fg); margin-bottom: 4px; }
+    .screen-placeholder .ph-hint { font-size: 0.8em; opacity: 0.6; max-width: 280px; }
+    .screen-card .screen-caption { padding: 12px 16px; font-size: 0.88em; color: var(--muted); border-top: 1px solid var(--border); }
+  </style>
+
+  <section id="screenshots" class="screenshots" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow" data-pt="Veja como é" data-en="See it in action">Veja como é</div>
+        <h2 data-pt="Screenshots" data-en="Screenshots">Screenshots</h2>
+        <p data-pt="Conheça a interface do Microed CodeAI em ação."
+           data-en="See the Microed CodeAI interface in action.">Conheça a interface do Microed CodeAI em ação.</p>
+      </div>
+
+      <div class="screen-grid">
+
+        <!-- SCREENSHOT 1: Chat + Agent Mode -->
+        <div class="screen-card">
+          <img src="chat.png" alt="Chat + Agent Mode" />
+          <div class="screen-caption" data-pt="Chat com Modo Agente — a IA lê arquivos, analisa o código e propõe mudanças."
+                                       data-en="Chat with Agent Mode — the AI reads files, analyzes code and proposes changes.">Chat com Modo Agente — a IA lê arquivos, analisa o código e propõe mudanças.</div>
+        </div>
+
+        <!-- SCREENSHOT 2: Settings Panel -->
+        <div class="screen-card">
+          <img src="config.png" alt="Settings Panel" />
+          <div class="screen-caption" data-pt="Painel de configuração — escolha o provedor, o modelo e o idioma da interface."
+                                       data-en="Settings panel — choose the provider, model and interface language.">Painel de configuração — escolha o provedor, o modelo e o idioma da interface.</div>
+        </div>
+
+        <!-- SCREENSHOT 3: History Panel -->
+        <div class="screen-card">
+          <img src="history.png" alt="Conversation History" />
+          <div class="screen-caption" data-pt="Histórico — acesse, restaure ou apague conversas anteriores com um clique."
+                                       data-en="History — access, restore or delete previous conversations with one click.">Histórico — acesse, restaure ou apague conversas anteriores com um clique.</div>
+        </div>
+
+        <!-- SCREENSHOT 4: Unit Test Generation -->
+        <div class="screen-card">
+          <img src="test.png" alt="Unit Test Generation" />
+          <div class="screen-caption" data-pt="Testes unitários em um clique — clique com botão direito em um arquivo e gere testes com suporte, borda e erro."
+                                       data-en="One-click unit tests — right-click a file and generate tests covering success, edge and error cases.">Testes unitários em um clique — clique com botão direito em um arquivo e gere testes com suporte, borda e erro.</div>
+        </div>
+
       </div>
     </div>
   </section>

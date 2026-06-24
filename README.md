@@ -24,6 +24,7 @@ AI chat integrated into Visual Studio Code, with a sidebar panel and **Agent Mod
 ## Table of Contents
 
 - [Features](#-features)
+- [Screenshots](#-screenshots)
 - [Languages](#-languages)
 - [Agent Mode](#-agent-mode)
 - [Conversation History](#-conversation-history)
@@ -60,6 +61,20 @@ Microed CodeAI offers a **Portuguese (PT-BR)** and **English (EN)** interface. T
 > Also available via the `microedcodeai.idioma` setting (`auto` / `pt` / `en`).
 
 All extension texts are translated: settings panel, chat, buttons, error messages, agent actions and more.
+
+## 📸 Screenshots
+
+### Chat & Agent Mode
+![Chat with Agent Mode](chat.png)
+
+### Settings Panel
+![Settings Panel](config.png)
+
+### Conversation History
+![History Panel](history.png)
+
+### Unit Test Generation
+![Unit Test Generation](test.png)
 
 ## 🤖 Agent Mode
 
